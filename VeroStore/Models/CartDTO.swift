@@ -1,0 +1,42 @@
+//
+//  CartDTO.swift
+//  VeroStore
+//
+//  Created by Claude on 11/21/25.
+//
+
+import Foundation
+
+struct CartDTO: Codable, Identifiable {
+    let id: Int
+    let userId: Int
+    let createdDate: Date
+    let lastModifiedDate: Date?
+    let items: [CartItemDTO]?
+
+    var totalAmount: Double {
+        items?.reduce(0) { $0 + $1.totalPrice } ?? 0
+    }
+}
+
+struct CartItemDTO: Codable {
+    let productId: Int
+    let productName: String?
+    let productImageUrl: String?
+    let productPrice: Double
+    let quantity: Int
+
+    var totalPrice: Double {
+        productPrice * Double(quantity)
+    }
+}
+
+struct AddToCartDTO: Codable {
+    let productId: Int
+    let quantity: Int
+}
+
+struct UpdateCartItemDTO: Codable {
+    let productId: Int
+    let quantity: Int
+}
