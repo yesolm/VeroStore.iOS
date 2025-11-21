@@ -18,6 +18,9 @@ class SplashViewModel: ObservableObject {
     private let dbManager = DatabaseManager.shared
     private let userDefaults = UserDefaults.standard
 
+    // MARK: - FOR TESTING: Uncomment line below to reset onboarding on every launch
+    // init() { AppSettings.shared.resetOnboarding() }
+
     func loadInitialData() async {
         do {
             // Fetch stores from API
