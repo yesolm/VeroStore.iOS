@@ -40,7 +40,6 @@ struct OnboardingView: View {
 
 struct LocationPermissionView: View {
     let onContinue: () -> Void
-    @StateObject private var locationManager = LocationManager()
 
     var body: some View {
         VStack(spacing: 30) {
@@ -64,8 +63,9 @@ struct LocationPermissionView: View {
 
             VStack(spacing: 15) {
                 Button(action: {
-                    locationManager.requestPermission()
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    LocationManager.shared.requestPermission()
+                    // Give the permission dialog time to appear
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
                         onContinue()
                     }
                 }) {
@@ -150,15 +150,45 @@ struct NotificationPermissionView: View {
 }
 
 class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
+    static let shared = LocationManager()
+
     private let manager = CLLocationManager()
 
-    override init() {
+    private override init() {
         super.init()
         manager.delegate = self
     }
 
     func requestPermission() {
-        manager.requestWhenInUseAuthorization()
+        // Check current authorization status
+        let status = manager.authorizationStatus
+
+        print("📍 Current location authorization status: \(status.rawValue)")
+
+        if status == .notDetermined {
+            print("📍 Requesting location authorization...")
+            manager.requestWhenInUseAuthorization()
+        } else {
+            print("📍 Location already authorized or denied: \(status.rawValue)")
+        }
+    }
+
+    // MARK: - CLLocationManagerDelegate
+
+    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        let status = manager.authorizationStatus
+        print("📍 Location authorization changed to: \(status.rawValue)")
+
+        switch status {
+        case .authorizedWhenInUse, .authorizedAlways:
+            print("✅ Location permission granted")
+        case .denied, .restricted:
+            print("❌ Location permission denied")
+        case .notDetermined:
+            print("⏳ Location permission not determined")
+        @unknown default:
+            print("⚠️ Unknown location permission status")
+        }
     }
 }
 
