@@ -117,6 +117,7 @@ struct HomeView: View {
 struct StoreSelector: View {
     @ObservedObject var viewModel: HomeViewModel
     @StateObject private var cartManager = CartManager.shared
+    @StateObject private var wishlistManager = WishlistManager.shared
     @State private var stores: [StoreDTO] = []
     @State private var storeToChange: StoreDTO?
     @State private var showChangeWarning = false
@@ -178,13 +179,21 @@ struct StoreSelector: View {
             }
             Button("Change", role: .destructive) {
                 if let store = storeToChange {
-                    // Clear cart and wishlist
                     Task {
+                        // Clear both local and server cart
                         await cartManager.clearCart()
+                        // Clear local cart items
+                        await MainActor.run {
+                            cartManager.localCartItems.removeAll()
+                        }
+                        // Clear wishlist
+                        await wishlistManager.clearWishlist()
+                        // Change store and reload data
+                        await MainActor.run {
+                            viewModel.selectStore(store)
+                            storeToChange = nil
+                        }
                     }
-                    // Change store
-                    viewModel.selectStore(store)
-                    storeToChange = nil
                 }
             }
         } message: {

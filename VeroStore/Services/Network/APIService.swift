@@ -208,4 +208,40 @@ class APIService {
             requiresAuth: true
         )
     }
+
+    // MARK: - Wishlist
+
+    func fetchWishlist() async throws -> [ProductDTO] {
+        return try await client.request(
+            endpoint: "/wishlist",
+            requiresAuth: true
+        )
+    }
+
+    func addToWishlist(productId: Int) async throws {
+        try await client.requestWithoutResponse(
+            endpoint: "/wishlist/\(productId)",
+            method: .post,
+            requiresAuth: true
+        )
+    }
+
+    func removeFromWishlist(productId: Int) async throws {
+        try await client.requestWithoutResponse(
+            endpoint: "/wishlist/\(productId)",
+            method: .delete,
+            requiresAuth: true
+        )
+    }
+
+    func isInWishlist(productId: Int) async throws -> Bool {
+        struct WishlistCheckResponse: Codable {
+            let isInWishlist: Bool
+        }
+        let response: WishlistCheckResponse = try await client.request(
+            endpoint: "/wishlist/check/\(productId)",
+            requiresAuth: true
+        )
+        return response.isInWishlist
+    }
 }

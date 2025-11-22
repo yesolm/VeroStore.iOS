@@ -283,10 +283,10 @@ struct LocalCartItemView: View {
                     .aspectRatio(contentMode: .fill)
             } placeholder: {
                 Rectangle()
-                    .fill(Color(UIColor.systemGray6))
+                    .fill(Color.lightGray)
                     .overlay(
                         Image(systemName: "photo")
-                            .foregroundColor(.gray)
+                            .foregroundColor(.mediumGray)
                     )
             }
             .frame(width: 80, height: 80)
@@ -316,7 +316,11 @@ struct LocalCartItemView: View {
                         Image(systemName: "minus")
                             .foregroundColor(.black)
                             .frame(width: 30, height: 30)
-                            .background(Color(UIColor.systemGray6))
+                            .background(Color.white)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 6)
+                                    .stroke(Color(red: 0.85, green: 0.85, blue: 0.85), lineWidth: 1)
+                            )
                             .cornerRadius(6)
                     }
 

@@ -142,9 +142,9 @@ struct LoggedInProfileView: View {
 
                 Spacer(minLength: 30)
             }
-            .background(Color(UIColor.systemGray6))
+            .background(Color.white)
         }
-        .background(Color(UIColor.systemGray6))
+        .background(Color.white)
         .navigationTitle("Profile")
         .alert("Logout", isPresented: $showLogoutConfirm) {
             Button("Cancel", role: .cancel) {}

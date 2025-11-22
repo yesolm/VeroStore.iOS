@@ -9,9 +9,8 @@ import SwiftUI
 
 struct WishlistView: View {
     @StateObject private var authManager = AuthManager.shared
+    @StateObject private var wishlistManager = WishlistManager.shared
     @State private var showLogin = false
-    @State private var wishlistItems: [ProductDTO] = []
-    @State private var isLoading = false
 
     var body: some View {
         NavigationView {
@@ -53,7 +52,7 @@ struct WishlistView: View {
 
                         Spacer()
                     }
-                } else if isLoading {
+                } else if wishlistManager.isLoading {
                     VStack(spacing: 20) {
                         ProgressView()
                             .progressViewStyle(CircularProgressViewStyle(tint: .primaryOrange))
@@ -63,7 +62,7 @@ struct WishlistView: View {
                             .font(.system(size: 15))
                             .foregroundColor(.gray)
                     }
-                } else if wishlistItems.isEmpty {
+                } else if wishlistManager.wishlistItems.isEmpty {
                     // Empty wishlist
                     VStack(spacing: 30) {
                         Spacer()
@@ -89,7 +88,7 @@ struct WishlistView: View {
                     // Wishlist with items
                     ScrollView {
                         LazyVStack(spacing: 15) {
-                            ForEach(wishlistItems) { product in
+                            ForEach(wishlistManager.wishlistItems) { product in
                                 NavigationLink(destination: ProductDetailView(product: product)) {
                                     WishlistItemRow(product: product)
                                 }
@@ -103,25 +102,13 @@ struct WishlistView: View {
             .sheet(isPresented: $showLogin) {
                 LoginView()
             }
-            .task {
-                if authManager.isAuthenticated {
-                    await loadWishlist()
-                }
-            }
         }
-    }
-
-    private func loadWishlist() async {
-        // TODO: Implement API call to fetch wishlist
-        // For now, just show empty state
-        isLoading = true
-        try? await Task.sleep(nanoseconds: 500_000_000)
-        isLoading = false
     }
 }
 
 struct WishlistItemRow: View {
     let product: ProductDTO
+    @StateObject private var wishlistManager = WishlistManager.shared
 
     var body: some View {
         HStack(spacing: 15) {
@@ -181,10 +168,16 @@ struct WishlistItemRow: View {
 
             Spacer()
 
-            // Heart icon
-            Image(systemName: "heart.fill")
-                .foregroundColor(.red)
-                .font(.system(size: 20))
+            // Heart icon - tap to remove
+            Button(action: {
+                Task {
+                    await wishlistManager.removeFromWishlist(productId: product.id)
+                }
+            }) {
+                Image(systemName: "heart.fill")
+                    .foregroundColor(.red)
+                    .font(.system(size: 20))
+            }
         }
         .padding()
         .background(Color.white)

@@ -10,10 +10,16 @@ import SwiftUI
 struct ProductDetailView: View {
     let product: ProductDTO
     @StateObject private var cartManager = CartManager.shared
+    @StateObject private var wishlistManager = WishlistManager.shared
+    @StateObject private var authManager = AuthManager.shared
     @State private var quantity = 1
     @State private var showAddedToCart = false
-    @State private var isInWishlist = false
+    @State private var showLoginAlert = false
     @Environment(\.dismiss) var dismiss
+
+    private var isInWishlist: Bool {
+        wishlistManager.isInWishlist(productId: product.id)
+    }
 
     var body: some View {
         ZStack {
@@ -55,8 +61,13 @@ struct ProductDetailView: View {
 
                         // Heart button
                         Button(action: {
-                            isInWishlist.toggle()
-                            // TODO: Add to wishlist
+                            if authManager.isAuthenticated {
+                                Task {
+                                    await wishlistManager.toggleWishlist(productId: product.id)
+                                }
+                            } else {
+                                showLoginAlert = true
+                            }
                         }) {
                             Image(systemName: isInWishlist ? "heart.fill" : "heart")
                                 .foregroundColor(isInWishlist ? .red : .black)
@@ -260,6 +271,11 @@ struct ProductDetailView: View {
         }
         .background(Color.white)
         .navigationBarHidden(true)
+        .alert("Login Required", isPresented: $showLoginAlert) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("Please login to add items to your wishlist")
+        }
     }
 }
 
