@@ -33,6 +33,35 @@ class HomeViewModel: ObservableObject {
         hasLoadedInitialData = true
     }
 
+    func selectStore(_ store: StoreDTO) {
+        selectedStore = store
+        dbManager.saveDefaultStoreId(store.id)
+        hasLoadedInitialData = false
+        Task {
+            await loadData()
+        }
+    }
+
+    func loadProducts(categoryId: Int) async {
+        guard let store = selectedStore else { return }
+
+        isLoading = true
+        errorMessage = nil
+
+        do {
+            let result = try await apiService.fetchProducts(
+                pageSize: 20,
+                locationId: store.id,
+                categoryId: categoryId
+            )
+            products = result.items ?? []
+            isLoading = false
+        } catch {
+            errorMessage = error.localizedDescription
+            isLoading = false
+        }
+    }
+
     func loadData() async {
         guard let store = selectedStore ?? dbManager.getDefaultStore() else {
             errorMessage = "No store selected"
