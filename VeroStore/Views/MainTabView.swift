@@ -20,10 +20,10 @@ struct MainTabView: View {
                 }
                 .tag(0)
 
-            CategoriesView()
+            WishlistView()
                 .tabItem {
-                    Image(systemName: selectedTab == 1 ? "square.grid.2x2.fill" : "square.grid.2x2")
-                    Text("Categories")
+                    Image(systemName: selectedTab == 1 ? "heart.fill" : "heart")
+                    Text("Wishlist")
                 }
                 .tag(1)
 
