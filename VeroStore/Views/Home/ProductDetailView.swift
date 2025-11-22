@@ -147,7 +147,13 @@ struct ProductDetailView: View {
             // Add to Cart Button
             Button(action: {
                 Task {
-                    await cartManager.addToCart(productId: product.id, quantity: quantity)
+                    await cartManager.addToCart(
+                        productId: product.id,
+                        quantity: quantity,
+                        productName: product.name,
+                        productImageUrl: product.imageUrl,
+                        productPrice: product.discountedPrice ?? product.price
+                    )
                     showAddedToCart = true
                 }
             }) {

@@ -15,45 +15,79 @@ struct CartView: View {
     var body: some View {
         NavigationView {
             if !authManager.isAuthenticated {
-                // Not logged in state
-                VStack(spacing: 30) {
-                    Spacer()
+                // Not logged in state - show local cart
+                if !cartManager.localCartItems.isEmpty {
+                    // Local cart with items
+                    VStack(spacing: 0) {
+                        ScrollView {
+                            VStack(spacing: 15) {
+                                ForEach(cartManager.localCartItems) { item in
+                                    LocalCartItemView(item: item)
+                                }
+                            }
+                            .padding()
+                        }
 
-                    Image(systemName: "cart")
-                        .font(.system(size: 80))
-                        .foregroundColor(.mediumGray)
+                        // Bottom Section
+                        VStack(spacing: 15) {
+                            // Total
+                            HStack {
+                                Text("Total:")
+                                    .font(.system(size: 18, weight: .semibold))
+                                    .foregroundColor(.black)
 
-                    VStack(spacing: 10) {
-                        Text("Your cart is waiting")
-                            .font(.system(size: 24, weight: .bold))
-                            .foregroundColor(.black)
+                                Spacer()
 
-                        Text("Login to see your cart items")
-                            .font(.system(size: 16))
-                            .foregroundColor(.gray)
-                            .multilineTextAlignment(.center)
+                                Text("$\(String(format: "%.2f", cartManager.localCartItems.reduce(0) { $0 + ($1.productPrice * Double($1.quantity)) }))")
+                                    .font(.system(size: 24, weight: .bold))
+                                    .foregroundColor(.primaryOrange)
+                            }
+
+                            // Login to Checkout
+                            Button(action: {
+                                showLogin = true
+                            }) {
+                                Text("Login to Checkout")
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .foregroundColor(.white)
+                                    .frame(maxWidth: .infinity)
+                                    .frame(height: 50)
+                                    .background(Color.primaryOrange)
+                                    .cornerRadius(12)
+                            }
+                        }
+                        .padding()
+                        .background(Color.white)
+                        .shadow(color: Color.black.opacity(0.1), radius: 10, x: 0, y: -5)
                     }
+                    .navigationTitle("Shopping Cart")
+                } else {
+                    // Empty local cart
+                    VStack(spacing: 30) {
+                        Spacer()
 
-                    Button(action: {
-                        showLogin = true
-                    }) {
-                        Text("Login / Sign Up")
-                            .font(.system(size: 16, weight: .semibold))
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 50)
-                            .background(Color.primaryOrange)
-                            .cornerRadius(12)
+                        Image(systemName: "cart")
+                            .font(.system(size: 80))
+                            .foregroundColor(.mediumGray)
+
+                        VStack(spacing: 10) {
+                            Text("Your cart is empty")
+                                .font(.system(size: 24, weight: .bold))
+                                .foregroundColor(.black)
+
+                            Text("Start shopping to add items")
+                                .font(.system(size: 16))
+                                .foregroundColor(.gray)
+                                .multilineTextAlignment(.center)
+                        }
+
+                        Spacer()
                     }
-                    .padding(.horizontal, 40)
+                    .background(Color.white.ignoresSafeArea())
+                    .navigationTitle("Shopping Cart")
+                }
 
-                    Spacer()
-                }
-                .background(Color.white.ignoresSafeArea())
-                .navigationTitle("Shopping Cart")
-                .sheet(isPresented: $showLogin) {
-                    LoginView()
-                }
+                // Sheet for login
             } else if let cart = cartManager.cart, let items = cart.items, !items.isEmpty {
                 // Cart with items
                 VStack(spacing: 0) {
@@ -124,6 +158,9 @@ struct CartView: View {
                 .navigationTitle("Shopping Cart")
             }
         }
+        .sheet(isPresented: $showLogin) {
+            LoginView()
+        }
         .task {
             if authManager.isAuthenticated {
                 await cartManager.fetchCart()
@@ -185,6 +222,101 @@ struct CartItemView: View {
                             .foregroundColor(.darkGray)
                             .frame(width: 30, height: 30)
                             .background(Color.lightGray)
+                            .cornerRadius(6)
+                    }
+
+                    Text("\(quantity)")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundColor(.black)
+                        .frame(minWidth: 30)
+
+                    Button(action: {
+                        quantity += 1
+                        Task {
+                            await cartManager.updateQuantity(productId: item.productId, quantity: quantity)
+                        }
+                    }) {
+                        Image(systemName: "plus")
+                            .foregroundColor(.white)
+                            .frame(width: 30, height: 30)
+                            .background(Color.primaryOrange)
+                            .cornerRadius(6)
+                    }
+
+                    Spacer()
+
+                    // Delete Button
+                    Button(action: {
+                        Task {
+                            await cartManager.removeItem(productId: item.productId)
+                        }
+                    }) {
+                        Image(systemName: "trash")
+                            .foregroundColor(.red)
+                    }
+                }
+            }
+        }
+        .padding()
+        .background(Color.white)
+        .cornerRadius(12)
+        .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
+    }
+}
+
+struct LocalCartItemView: View {
+    let item: LocalCartItem
+    @StateObject private var cartManager = CartManager.shared
+    @State private var quantity: Int
+
+    init(item: LocalCartItem) {
+        self.item = item
+        _quantity = State(initialValue: item.quantity)
+    }
+
+    var body: some View {
+        HStack(spacing: 15) {
+            // Product Image
+            AsyncImage(url: URL(string: item.productImageUrl ?? "")) { image in
+                image
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+            } placeholder: {
+                Rectangle()
+                    .fill(Color(UIColor.systemGray6))
+                    .overlay(
+                        Image(systemName: "photo")
+                            .foregroundColor(.gray)
+                    )
+            }
+            .frame(width: 80, height: 80)
+            .cornerRadius(10)
+
+            // Product Info
+            VStack(alignment: .leading, spacing: 8) {
+                Text(item.productName ?? "")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(.black)
+                    .lineLimit(2)
+
+                Text("$\(String(format: "%.2f", item.productPrice))")
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundColor(.primaryOrange)
+
+                // Quantity Controls
+                HStack(spacing: 15) {
+                    Button(action: {
+                        if quantity > 1 {
+                            quantity -= 1
+                            Task {
+                                await cartManager.updateQuantity(productId: item.productId, quantity: quantity)
+                            }
+                        }
+                    }) {
+                        Image(systemName: "minus")
+                            .foregroundColor(.black)
+                            .frame(width: 30, height: 30)
+                            .background(Color(UIColor.systemGray6))
                             .cornerRadius(6)
                     }
 
