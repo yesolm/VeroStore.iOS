@@ -21,24 +21,26 @@ struct HomeView: View {
                     // Header
                     VStack(spacing: 15) {
                         // Search Bar
-                        HStack {
-                            Image(systemName: "magnifyingglass")
-                                .foregroundColor(.gray)
+                        Button(action: {
+                            showSearchResults = true
+                        }) {
+                            HStack {
+                                Image(systemName: "magnifyingglass")
+                                    .foregroundColor(.gray)
 
-                            TextField("Search products...", text: $searchText)
-                                .font(.system(size: 16))
-                                .foregroundColor(.black)
-                                .onTapGesture {
-                                    showSearchResults = true
-                                }
+                                Text(searchText.isEmpty ? "Search products..." : searchText)
+                                    .font(.system(size: 16))
+                                    .foregroundColor(searchText.isEmpty ? .gray : .black)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+                            .padding()
+                            .background(Color.white)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .stroke(Color(UIColor.systemGray5), lineWidth: 1)
+                            )
+                            .cornerRadius(10)
                         }
-                        .padding()
-                        .background(Color.white)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 10)
-                                .stroke(Color(UIColor.systemGray5), lineWidth: 1)
-                        )
-                        .cornerRadius(10)
                         .padding(.horizontal)
 
                         // Store and Categories Row

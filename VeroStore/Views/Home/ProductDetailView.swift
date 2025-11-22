@@ -12,27 +12,64 @@ struct ProductDetailView: View {
     @StateObject private var cartManager = CartManager.shared
     @State private var quantity = 1
     @State private var showAddedToCart = false
+    @State private var isInWishlist = false
     @Environment(\.dismiss) var dismiss
 
     var body: some View {
         ZStack {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-                // Product Image
-                AsyncImage(url: URL(string: product.imageUrl ?? "")) { image in
-                    image
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                } placeholder: {
-                    Rectangle()
-                        .fill(Color(UIColor.systemGray6))
-                        .overlay(
-                            ProgressView()
-                        )
+                // Product Image with overlay buttons
+                ZStack(alignment: .topLeading) {
+                    AsyncImage(url: URL(string: product.imageUrl ?? "")) { image in
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                    } placeholder: {
+                        Rectangle()
+                            .fill(Color(UIColor.systemGray6))
+                            .overlay(
+                                ProgressView()
+                            )
+                    }
+                    .frame(height: 300)
+                    .frame(maxWidth: .infinity)
+                    .clipped()
+
+                    // Top buttons overlay
+                    HStack {
+                        // Back button
+                        Button(action: {
+                            dismiss()
+                        }) {
+                            Image(systemName: "arrow.left")
+                                .foregroundColor(.black)
+                                .font(.system(size: 18, weight: .medium))
+                                .frame(width: 40, height: 40)
+                                .background(Color.white)
+                                .clipShape(Circle())
+                                .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
+                        }
+
+                        Spacer()
+
+                        // Heart button
+                        Button(action: {
+                            isInWishlist.toggle()
+                            // TODO: Add to wishlist
+                        }) {
+                            Image(systemName: isInWishlist ? "heart.fill" : "heart")
+                                .foregroundColor(isInWishlist ? .red : .black)
+                                .font(.system(size: 18, weight: .medium))
+                                .frame(width: 40, height: 40)
+                                .background(Color.white)
+                                .clipShape(Circle())
+                                .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
+                        }
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.top, 16)
                 }
-                .frame(height: 300)
-                .frame(maxWidth: .infinity)
-                .clipped()
 
                 VStack(alignment: .leading, spacing: 15) {
                     // Product Name
@@ -118,7 +155,11 @@ struct ProductDetailView: View {
                                 Image(systemName: "minus")
                                     .foregroundColor(.black)
                                     .frame(width: 40, height: 40)
-                                    .background(Color(UIColor.systemGray6))
+                                    .background(Color.white)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 8)
+                                            .stroke(Color(UIColor.systemGray4), lineWidth: 1.5)
+                                    )
                                     .cornerRadius(8)
                             }
 
@@ -218,7 +259,7 @@ struct ProductDetailView: View {
         }
         }
         .background(Color.white)
-        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarHidden(true)
     }
 }
 
