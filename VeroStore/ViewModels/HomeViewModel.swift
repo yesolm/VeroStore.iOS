@@ -18,12 +18,19 @@ class HomeViewModel: ObservableObject {
 
     private let apiService = APIService.shared
     private let dbManager = DatabaseManager.shared
+    private var hasLoadedInitialData = false
 
     init() {
         selectedStore = dbManager.getDefaultStore()
-        Task {
-            await loadData()
+    }
+
+    func loadDataIfNeeded() async {
+        guard !hasLoadedInitialData else {
+            print("📊 Data already loaded, skipping...")
+            return
         }
+        await loadData()
+        hasLoadedInitialData = true
     }
 
     func loadData() async {

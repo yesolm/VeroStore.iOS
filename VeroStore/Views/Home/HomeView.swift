@@ -113,6 +113,9 @@ struct HomeView: View {
             .refreshable {
                 await viewModel.loadData()
             }
+            .task {
+                await viewModel.loadDataIfNeeded()
+            }
         }
     }
 }
