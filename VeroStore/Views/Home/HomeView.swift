@@ -49,11 +49,18 @@ struct HomeView: View {
 
                                 // Category Bubbles
                                 ForEach(viewModel.categories.prefix(6)) { category in
-                                    CategoryBubble(category: category) {
-                                        // Filter by category
-                                        Task {
-                                            await viewModel.loadProducts(categoryId: category.id)
-                                        }
+                                    NavigationLink(destination: CategoryProductsListView(category: category, storeId: viewModel.selectedStore?.id ?? 0)) {
+                                        Text(category.name ?? "")
+                                            .font(.system(size: 14, weight: .medium))
+                                            .foregroundColor(.black)
+                                            .padding(.horizontal, 16)
+                                            .padding(.vertical, 8)
+                                            .background(Color.white)
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: 20)
+                                                    .stroke(Color(UIColor.systemGray5), lineWidth: 1)
+                                            )
+                                            .cornerRadius(20)
                                     }
                                 }
                             }
@@ -107,20 +114,39 @@ struct HomeView: View {
 
 struct StoreSelector: View {
     @ObservedObject var viewModel: HomeViewModel
-    @State private var showStoreSelection = false
+    @State private var stores: [StoreDTO] = []
 
     var body: some View {
-        Button(action: {
-            showStoreSelection = true
-        }) {
+        Menu {
+            ForEach(stores) { store in
+                Button(action: {
+                    viewModel.selectStore(store)
+                }) {
+                    HStack {
+                        VStack(alignment: .leading) {
+                            Text(store.name ?? "Store")
+                            if let city = store.city {
+                                Text(city)
+                                    .font(.caption)
+                                    .foregroundColor(.gray)
+                            }
+                        }
+                        if store.id == viewModel.selectedStore?.id {
+                            Image(systemName: "checkmark")
+                        }
+                    }
+                }
+            }
+        } label: {
             HStack(spacing: 6) {
                 Image(systemName: "location.fill")
                     .foregroundColor(.primaryOrange)
                     .font(.system(size: 12))
 
-                Text(viewModel.selectedStore?.city ?? "Select Store")
+                Text(viewModel.selectedStore?.name ?? "Select Store")
                     .font(.system(size: 14, weight: .medium))
                     .foregroundColor(.black)
+                    .lineLimit(1)
 
                 Image(systemName: "chevron.down")
                     .foregroundColor(.gray)
@@ -135,8 +161,8 @@ struct StoreSelector: View {
             )
             .cornerRadius(20)
         }
-        .sheet(isPresented: $showStoreSelection) {
-            StoreSelectionSheet(viewModel: viewModel, isPresented: $showStoreSelection)
+        .onAppear {
+            stores = DatabaseManager.shared.getStores() ?? []
         }
     }
 }
@@ -366,6 +392,130 @@ struct ProductCard: View {
         .background(Color.white)
         .cornerRadius(12)
         .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
+    }
+}
+
+struct CategoryProductsListView: View {
+    let category: CategoryDTO
+    let storeId: Int
+    @StateObject private var viewModel = CategoriesViewModel()
+
+    var body: some View {
+        ZStack {
+            Color.white.ignoresSafeArea()
+
+            if viewModel.isLoading && viewModel.products.isEmpty {
+                VStack(spacing: 20) {
+                    ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle(tint: .primaryOrange))
+                        .scaleEffect(1.5)
+
+                    Text("Loading products...")
+                        .font(.system(size: 15))
+                        .foregroundColor(.gray)
+                }
+            } else if viewModel.products.isEmpty {
+                VStack(spacing: 15) {
+                    Image(systemName: "bag")
+                        .font(.system(size: 50))
+                        .foregroundColor(.gray)
+
+                    Text("No products in this category")
+                        .font(.system(size: 15))
+                        .foregroundColor(.gray)
+                }
+            } else {
+                ScrollView {
+                    LazyVStack(spacing: 15) {
+                        ForEach(viewModel.products) { product in
+                            NavigationLink(destination: ProductDetailView(product: product)) {
+                                CategoryProductRow(product: product)
+                            }
+                        }
+                    }
+                    .padding()
+                }
+            }
+        }
+        .navigationTitle(category.name ?? "Products")
+        .navigationBarTitleDisplayMode(.inline)
+        .task {
+            await viewModel.loadProducts(for: category)
+        }
+    }
+}
+
+struct CategoryProductRow: View {
+    let product: ProductDTO
+
+    var body: some View {
+        HStack(spacing: 15) {
+            // Product Image
+            AsyncImage(url: URL(string: product.imageUrl ?? "")) { image in
+                image
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+            } placeholder: {
+                Rectangle()
+                    .fill(Color(UIColor.systemGray6))
+                    .overlay(
+                        ProgressView()
+                    )
+            }
+            .frame(width: 80, height: 80)
+            .cornerRadius(8)
+            .clipped()
+
+            // Product Details
+            VStack(alignment: .leading, spacing: 6) {
+                Text(product.name ?? "Product")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(.black)
+                    .lineLimit(2)
+
+                // Rating
+                HStack(spacing: 4) {
+                    ForEach(0..<5) { index in
+                        Image(systemName: index < Int(product.rating) ? "star.fill" : "star")
+                            .foregroundColor(.starYellow)
+                            .font(.system(size: 12))
+                    }
+
+                    Text(String(format: "%.1f", product.rating))
+                        .font(.system(size: 12))
+                        .foregroundColor(.gray)
+                }
+
+                // Price
+                HStack(spacing: 8) {
+                    if let discounted = product.discountedPrice {
+                        Text("$\(String(format: "%.2f", discounted))")
+                            .font(.system(size: 18, weight: .bold))
+                            .foregroundColor(.primaryOrange)
+
+                        Text("$\(String(format: "%.2f", product.price))")
+                            .font(.system(size: 14))
+                            .foregroundColor(.gray)
+                            .strikethrough()
+                    } else {
+                        Text("$\(String(format: "%.2f", product.price))")
+                            .font(.system(size: 18, weight: .bold))
+                            .foregroundColor(.primaryOrange)
+                    }
+                }
+            }
+
+            Spacer()
+
+            // Arrow
+            Image(systemName: "chevron.right")
+                .foregroundColor(.gray)
+                .font(.system(size: 14))
+        }
+        .padding()
+        .background(Color.white)
+        .cornerRadius(12)
+        .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
     }
 }
 

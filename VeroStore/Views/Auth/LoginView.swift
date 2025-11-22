@@ -57,7 +57,11 @@ struct LoginView: View {
                                     }
                             }
                             .padding()
-                            .background(Color(UIColor.systemGray6))
+                            .background(Color.white)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .stroke(Color(UIColor.systemGray5), lineWidth: 1)
+                            )
                             .cornerRadius(10)
                         }
                         .padding(.horizontal)
@@ -81,7 +85,11 @@ struct LoginView: View {
                                     }
                             }
                             .padding()
-                            .background(Color(UIColor.systemGray6))
+                            .background(Color.white)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .stroke(Color(UIColor.systemGray5), lineWidth: 1)
+                            )
                             .cornerRadius(10)
                         }
                         .padding(.horizontal)

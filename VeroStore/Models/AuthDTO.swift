@@ -33,8 +33,23 @@ struct AppleAuthRequest: Codable {
 struct AuthResponse: Codable {
     let accessToken: String
     let refreshToken: String
-    let expiresIn: Int
-    let user: UserDTO?
+    let expiresAt: String
+    let userId: String
+    let email: String
+    let firstName: String?
+    let lastName: String?
+    let roles: [String]?
+
+    // Computed property to convert to UserDTO
+    var user: UserDTO {
+        UserDTO(
+            id: Int(userId) ?? 0,
+            email: email,
+            firstName: firstName,
+            lastName: lastName,
+            phone: nil
+        )
+    }
 }
 
 struct UserDTO: Codable {

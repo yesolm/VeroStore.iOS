@@ -35,12 +35,12 @@ class AuthManager: ObservableObject {
 
     func login(response: AuthResponse) {
         apiClient.setTokens(accessToken: response.accessToken, refreshToken: response.refreshToken)
-        currentUser = response.user
+        let user = response.user
+        currentUser = user
         isAuthenticated = true
 
         userDefaults.set(true, forKey: isAuthenticatedKey)
-        if let user = response.user,
-           let userData = try? JSONEncoder().encode(user) {
+        if let userData = try? JSONEncoder().encode(user) {
             userDefaults.set(userData, forKey: currentUserKey)
         }
     }
