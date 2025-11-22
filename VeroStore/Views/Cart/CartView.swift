@@ -26,10 +26,11 @@ struct CartView: View {
                     VStack(spacing: 10) {
                         Text("Your cart is waiting")
                             .font(.system(size: 24, weight: .bold))
+                            .foregroundColor(.black)
 
                         Text("Login to see your cart items")
                             .font(.system(size: 16))
-                            .foregroundColor(.mediumGray)
+                            .foregroundColor(.gray)
                             .multilineTextAlignment(.center)
                     }
 
@@ -48,6 +49,7 @@ struct CartView: View {
 
                     Spacer()
                 }
+                .background(Color.white.ignoresSafeArea())
                 .navigationTitle("Shopping Cart")
                 .sheet(isPresented: $showLogin) {
                     LoginView()
@@ -70,6 +72,7 @@ struct CartView: View {
                         HStack {
                             Text("Total:")
                                 .font(.system(size: 18, weight: .semibold))
+                                .foregroundColor(.black)
 
                             Spacer()
 
@@ -108,14 +111,16 @@ struct CartView: View {
                     VStack(spacing: 10) {
                         Text("Your cart is empty")
                             .font(.system(size: 24, weight: .bold))
+                            .foregroundColor(.black)
 
                         Text("Add items to get started")
                             .font(.system(size: 16))
-                            .foregroundColor(.mediumGray)
+                            .foregroundColor(.gray)
                     }
 
                     Spacer()
                 }
+                .background(Color.white.ignoresSafeArea())
                 .navigationTitle("Shopping Cart")
             }
         }
@@ -159,6 +164,7 @@ struct CartItemView: View {
             VStack(alignment: .leading, spacing: 8) {
                 Text(item.productName ?? "")
                     .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(.black)
                     .lineLimit(2)
 
                 Text("$\(String(format: "%.2f", item.productPrice))")
@@ -184,6 +190,7 @@ struct CartItemView: View {
 
                     Text("\(quantity)")
                         .font(.system(size: 16, weight: .medium))
+                        .foregroundColor(.black)
                         .frame(minWidth: 30)
 
                     Button(action: {

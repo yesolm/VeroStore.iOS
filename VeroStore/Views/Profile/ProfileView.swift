@@ -49,6 +49,7 @@ struct LoggedInProfileView: View {
                         if let user = authManager.currentUser {
                             Text("\(user.firstName ?? "") \(user.lastName ?? "")")
                                 .font(.system(size: 20, weight: .bold))
+                                .foregroundColor(.black)
 
                             Text(user.email)
                                 .font(.system(size: 14))
@@ -141,9 +142,9 @@ struct LoggedInProfileView: View {
 
                 Spacer(minLength: 30)
             }
-            .background(Color(UIColor.systemGroupedBackground))
+            .background(Color(UIColor.systemGray6))
         }
-        .background(Color(UIColor.systemGroupedBackground))
+        .background(Color(UIColor.systemGray6))
         .navigationTitle("Profile")
         .alert("Logout", isPresented: $showLogoutConfirm) {
             Button("Cancel", role: .cancel) {}
@@ -179,10 +180,11 @@ struct LoggedOutProfileView: View {
             VStack(spacing: 10) {
                 Text("Welcome!")
                     .font(.system(size: 24, weight: .bold))
+                    .foregroundColor(.black)
 
                 Text("Login to access your profile and orders")
                     .font(.system(size: 16))
-                    .foregroundColor(.mediumGray)
+                    .foregroundColor(.gray)
                     .multilineTextAlignment(.center)
             }
 
@@ -202,6 +204,7 @@ struct LoggedOutProfileView: View {
 
             Spacer()
         }
+        .background(Color.white.ignoresSafeArea())
         .navigationTitle("Profile")
     }
 }
@@ -218,7 +221,7 @@ struct ProfileMenuItem: View {
 
             Text(title)
                 .font(.system(size: 16))
-                .foregroundColor(.darkGray)
+                .foregroundColor(.black)
 
             Spacer()
         }
@@ -241,12 +244,12 @@ struct ProfileMenuButton: View {
 
                 Text(title)
                     .font(.system(size: 16))
-                    .foregroundColor(.darkGray)
+                    .foregroundColor(.black)
 
                 Spacer()
 
                 Image(systemName: "chevron.right")
-                    .foregroundColor(.mediumGray)
+                    .foregroundColor(.gray)
                     .font(.system(size: 14))
             }
             .padding()

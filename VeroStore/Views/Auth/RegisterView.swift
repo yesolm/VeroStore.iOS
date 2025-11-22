@@ -11,19 +11,28 @@ import AuthenticationServices
 struct RegisterView: View {
     @StateObject private var viewModel = AuthViewModel()
     @Environment(\.dismiss) var dismiss
+    @FocusState private var focusedField: Field?
+
+    enum Field {
+        case firstName, lastName, email, password
+    }
 
     var body: some View {
         NavigationView {
-            ScrollView {
+            ZStack {
+                Color.white.ignoresSafeArea()
+
+                ScrollView {
                 VStack(spacing: 25) {
                     // Header
                     VStack(spacing: 10) {
                         Text("Create Account")
                             .font(.system(size: 28, weight: .bold))
+                            .foregroundColor(.black)
 
                         Text("Sign up to get started")
                             .font(.system(size: 16))
-                            .foregroundColor(.mediumGray)
+                            .foregroundColor(.gray)
                     }
                     .padding(.top, 40)
                     .padding(.bottom, 20)
@@ -32,14 +41,20 @@ struct RegisterView: View {
                     VStack(alignment: .leading, spacing: 8) {
                         HStack {
                             Image(systemName: "person")
-                                .foregroundColor(.mediumGray)
+                                .foregroundColor(.gray)
                                 .frame(width: 20)
 
                             TextField("First Name", text: $viewModel.firstName)
                                 .textContentType(.givenName)
+                                .foregroundColor(.black)
+                                .focused($focusedField, equals: .firstName)
+                                .submitLabel(.next)
+                                .onSubmit {
+                                    focusedField = .lastName
+                                }
                         }
                         .padding()
-                        .background(Color.lightGray)
+                        .background(Color(UIColor.systemGray6))
                         .cornerRadius(10)
                     }
                     .padding(.horizontal)
@@ -48,14 +63,20 @@ struct RegisterView: View {
                     VStack(alignment: .leading, spacing: 8) {
                         HStack {
                             Image(systemName: "person")
-                                .foregroundColor(.mediumGray)
+                                .foregroundColor(.gray)
                                 .frame(width: 20)
 
                             TextField("Last Name", text: $viewModel.lastName)
                                 .textContentType(.familyName)
+                                .foregroundColor(.black)
+                                .focused($focusedField, equals: .lastName)
+                                .submitLabel(.next)
+                                .onSubmit {
+                                    focusedField = .email
+                                }
                         }
                         .padding()
-                        .background(Color.lightGray)
+                        .background(Color(UIColor.systemGray6))
                         .cornerRadius(10)
                     }
                     .padding(.horizontal)
@@ -64,16 +85,22 @@ struct RegisterView: View {
                     VStack(alignment: .leading, spacing: 8) {
                         HStack {
                             Image(systemName: "envelope")
-                                .foregroundColor(.mediumGray)
+                                .foregroundColor(.gray)
                                 .frame(width: 20)
 
                             TextField("Email", text: $viewModel.email)
                                 .textContentType(.emailAddress)
                                 .autocapitalization(.none)
                                 .keyboardType(.emailAddress)
+                                .foregroundColor(.black)
+                                .focused($focusedField, equals: .email)
+                                .submitLabel(.next)
+                                .onSubmit {
+                                    focusedField = .password
+                                }
                         }
                         .padding()
-                        .background(Color.lightGray)
+                        .background(Color(UIColor.systemGray6))
                         .cornerRadius(10)
                     }
                     .padding(.horizontal)
@@ -82,14 +109,22 @@ struct RegisterView: View {
                     VStack(alignment: .leading, spacing: 8) {
                         HStack {
                             Image(systemName: "lock")
-                                .foregroundColor(.mediumGray)
+                                .foregroundColor(.gray)
                                 .frame(width: 20)
 
                             SecureField("Password", text: $viewModel.password)
                                 .textContentType(.newPassword)
+                                .foregroundColor(.black)
+                                .focused($focusedField, equals: .password)
+                                .submitLabel(.go)
+                                .onSubmit {
+                                    Task {
+                                        await viewModel.register()
+                                    }
+                                }
                         }
                         .padding()
-                        .background(Color.lightGray)
+                        .background(Color(UIColor.systemGray6))
                         .cornerRadius(10)
                     }
                     .padding(.horizontal)
@@ -128,16 +163,16 @@ struct RegisterView: View {
                     // Divider
                     HStack {
                         Rectangle()
-                            .fill(Color.lightGray)
+                            .fill(Color(UIColor.systemGray5))
                             .frame(height: 1)
 
                         Text("OR")
                             .font(.system(size: 14))
-                            .foregroundColor(.mediumGray)
+                            .foregroundColor(.gray)
                             .padding(.horizontal, 10)
 
                         Rectangle()
-                            .fill(Color.lightGray)
+                            .fill(Color(UIColor.systemGray5))
                             .frame(height: 1)
                     }
                     .padding(.horizontal)
@@ -156,13 +191,13 @@ struct RegisterView: View {
                                 Text("Continue with Google")
                                     .font(.system(size: 16, weight: .medium))
                             }
-                            .foregroundColor(.darkGray)
+                            .foregroundColor(.black)
                             .frame(maxWidth: .infinity)
                             .frame(height: 50)
                             .background(Color.white)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 12)
-                                    .stroke(Color.lightGray, lineWidth: 1)
+                                    .stroke(Color(UIColor.systemGray5), lineWidth: 1)
                             )
                             .cornerRadius(12)
                         }
@@ -193,22 +228,26 @@ struct RegisterView: View {
                     // Terms and Privacy
                     Text("By signing up, you agree to our Terms of Service and Privacy Policy")
                         .font(.system(size: 12))
-                        .foregroundColor(.mediumGray)
+                        .foregroundColor(.gray)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 40)
 
                     Spacer()
                 }
             }
+            }
             .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
+                ToolbarItem(placement: .navigationBarLeading) {
                     Button(action: {
                         dismiss()
                     }) {
                         Image(systemName: "xmark")
-                            .foregroundColor(.darkGray)
+                            .foregroundColor(.black)
                     }
                 }
+            }
+            .onAppear {
+                focusedField = .firstName
             }
         }
         .onChange(of: viewModel.isAuthenticated) { _, newValue in
