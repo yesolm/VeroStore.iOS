@@ -116,13 +116,19 @@ struct HomeView: View {
 
 struct StoreSelector: View {
     @ObservedObject var viewModel: HomeViewModel
+    @StateObject private var cartManager = CartManager.shared
     @State private var stores: [StoreDTO] = []
+    @State private var storeToChange: StoreDTO?
+    @State private var showChangeWarning = false
 
     var body: some View {
         Menu {
             ForEach(stores) { store in
                 Button(action: {
-                    viewModel.selectStore(store)
+                    if store.id != viewModel.selectedStore?.id {
+                        storeToChange = store
+                        showChangeWarning = true
+                    }
                 }) {
                     HStack {
                         VStack(alignment: .leading) {
@@ -165,6 +171,24 @@ struct StoreSelector: View {
         }
         .onAppear {
             stores = DatabaseManager.shared.getStores() ?? []
+        }
+        .alert("Change Store?", isPresented: $showChangeWarning) {
+            Button("Cancel", role: .cancel) {
+                storeToChange = nil
+            }
+            Button("Change", role: .destructive) {
+                if let store = storeToChange {
+                    // Clear cart and wishlist
+                    Task {
+                        await cartManager.clearCart()
+                    }
+                    // Change store
+                    viewModel.selectStore(store)
+                    storeToChange = nil
+                }
+            }
+        } message: {
+            Text("Changing stores will reset your shopping experience. Your cart and wishlist will be cleared.")
         }
     }
 }
