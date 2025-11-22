@@ -267,4 +267,56 @@ class APIService {
             requiresAuth: true
         )
     }
+
+    // MARK: - Payments
+
+    func fetchPaymentMethods() async throws -> [PaymentMethodDTO] {
+        return try await client.request(
+            endpoint: "/payment-methods",
+            requiresAuth: true
+        )
+    }
+
+    func addPaymentMethod(dto: AddPaymentMethodDTO) async throws -> PaymentMethodDTO {
+        return try await client.request(
+            endpoint: "/payment-methods",
+            method: .post,
+            body: dto,
+            requiresAuth: true
+        )
+    }
+
+    func deletePaymentMethod(id: Int) async throws {
+        try await client.requestWithoutResponse(
+            endpoint: "/payment-methods/\(id)",
+            method: .delete,
+            requiresAuth: true
+        )
+    }
+
+    func setDefaultPaymentMethod(id: Int) async throws {
+        try await client.requestWithoutResponse(
+            endpoint: "/payment-methods/\(id)/set-default",
+            method: .put,
+            requiresAuth: true
+        )
+    }
+
+    func createPaymentIntent(request: CreatePaymentIntentRequest) async throws -> PaymentIntentDTO {
+        return try await client.request(
+            endpoint: "/payments/create-intent",
+            method: .post,
+            body: request,
+            requiresAuth: true
+        )
+    }
+
+    func checkout(request: CheckoutRequest) async throws -> CheckoutResponse {
+        return try await client.request(
+            endpoint: "/checkout",
+            method: .post,
+            body: request,
+            requiresAuth: true
+        )
+    }
 }

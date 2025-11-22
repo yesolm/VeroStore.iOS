@@ -11,6 +11,7 @@ struct CartView: View {
     @StateObject private var cartManager = CartManager.shared
     @StateObject private var authManager = AuthManager.shared
     @State private var showLogin = false
+    @State private var navigateToCheckout = false
 
     var body: some View {
         NavigationView {
@@ -116,8 +117,16 @@ struct CartView: View {
                         }
 
                         // Checkout Button
+                        NavigationLink(
+                            destination: cart.map { CheckoutView(cart: $0) },
+                            isActive: $navigateToCheckout
+                        ) {
+                            EmptyView()
+                        }
+                        .hidden()
+
                         Button(action: {
-                            // Handle checkout
+                            navigateToCheckout = true
                         }) {
                             Text("Proceed to Checkout")
                                 .font(.system(size: 16, weight: .semibold))

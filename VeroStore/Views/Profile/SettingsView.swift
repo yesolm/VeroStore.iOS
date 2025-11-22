@@ -51,6 +51,17 @@ struct SettingsView: View {
                             Divider()
                                 .padding(.leading, 60)
 
+                            NavigationLink(destination: PaymentMethodsView()) {
+                                SettingsRow(
+                                    icon: "creditcard",
+                                    title: "Payment Methods",
+                                    action: {}
+                                )
+                            }
+
+                            Divider()
+                                .padding(.leading, 60)
+
                             SettingsRow(
                                 icon: "envelope",
                                 title: "Email Preferences",
