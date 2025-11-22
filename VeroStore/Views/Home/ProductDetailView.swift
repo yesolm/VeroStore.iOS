@@ -15,6 +15,7 @@ struct ProductDetailView: View {
     @Environment(\.dismiss) var dismiss
 
     var body: some View {
+        ZStack {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 // Product Image
@@ -154,7 +155,22 @@ struct ProductDetailView: View {
                         productImageUrl: product.imageUrl,
                         productPrice: product.discountedPrice ?? product.price
                     )
-                    showAddedToCart = true
+
+                    // Haptic feedback
+                    let generator = UINotificationFeedbackGenerator()
+                    generator.notificationOccurred(.success)
+
+                    // Show toast
+                    withAnimation {
+                        showAddedToCart = true
+                    }
+
+                    // Auto-hide after 2 seconds
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                        withAnimation {
+                            showAddedToCart = false
+                        }
+                    }
                 }
             }) {
                 HStack {
@@ -171,11 +187,38 @@ struct ProductDetailView: View {
             .padding()
             .background(Color.white)
         }
-        .alert("Added to Cart", isPresented: $showAddedToCart) {
-            Button("OK", role: .cancel) {}
-        } message: {
-            Text("\(product.name ?? "Product") has been added to your cart")
+
+        // Toast Overlay
+        if showAddedToCart {
+            VStack {
+                Spacer()
+
+                HStack(spacing: 12) {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundColor(.white)
+                        .font(.system(size: 24))
+
+                    Text("Added to Cart")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(.white)
+                }
+                .padding(.horizontal, 24)
+                .padding(.vertical, 16)
+                .background(
+                    Capsule()
+                        .fill(Color.black.opacity(0.8))
+                )
+                .shadow(color: Color.black.opacity(0.2), radius: 10, x: 0, y: 5)
+
+                Spacer()
+                    .frame(height: 100)
+            }
+            .transition(.move(edge: .bottom).combined(with: .opacity))
+            .zIndex(999)
         }
+        }
+        .background(Color.white)
+        .navigationBarTitleDisplayMode(.inline)
     }
 }
 

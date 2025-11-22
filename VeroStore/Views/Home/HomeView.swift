@@ -33,7 +33,11 @@ struct HomeView: View {
                                 }
                         }
                         .padding()
-                        .background(Color(UIColor.systemGray6))
+                        .background(Color.white)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color(UIColor.systemGray5), lineWidth: 1)
+                        )
                         .cornerRadius(10)
                         .padding(.horizontal)
 
@@ -124,7 +128,11 @@ struct StoreSelector: View {
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
-            .background(Color(UIColor.systemGray6))
+            .background(Color.white)
+            .overlay(
+                RoundedRectangle(cornerRadius: 20)
+                    .stroke(Color(UIColor.systemGray5), lineWidth: 1)
+            )
             .cornerRadius(20)
         }
         .sheet(isPresented: $showStoreSelection) {
@@ -140,30 +148,36 @@ struct StoreSelectionSheet: View {
 
     var body: some View {
         NavigationView {
-            List(stores) { store in
-                Button(action: {
-                    viewModel.selectStore(store)
-                    isPresented = false
-                }) {
-                    HStack {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(store.name ?? "Store")
-                                .font(.system(size: 16, weight: .medium))
-                                .foregroundColor(.black)
+            ZStack {
+                Color.white.ignoresSafeArea()
 
-                            Text("\(store.city ?? ""), \(store.state ?? "")")
-                                .font(.system(size: 14))
-                                .foregroundColor(.gray)
-                        }
+                List(stores) { store in
+                    Button(action: {
+                        viewModel.selectStore(store)
+                        isPresented = false
+                    }) {
+                        HStack {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(store.name ?? "Store")
+                                    .font(.system(size: 16, weight: .medium))
+                                    .foregroundColor(.black)
 
-                        Spacer()
+                                Text("\(store.city ?? ""), \(store.state ?? "")")
+                                    .font(.system(size: 14))
+                                    .foregroundColor(.gray)
+                            }
 
-                        if store.id == viewModel.selectedStore?.id {
-                            Image(systemName: "checkmark")
-                                .foregroundColor(.primaryOrange)
+                            Spacer()
+
+                            if store.id == viewModel.selectedStore?.id {
+                                Image(systemName: "checkmark")
+                                    .foregroundColor(.primaryOrange)
+                            }
                         }
                     }
+                    .listRowBackground(Color.white)
                 }
+                .scrollContentBackground(.hidden)
             }
             .navigationTitle("Select Store")
             .navigationBarTitleDisplayMode(.inline)
@@ -172,6 +186,7 @@ struct StoreSelectionSheet: View {
                     Button("Done") {
                         isPresented = false
                     }
+                    .foregroundColor(.black)
                 }
             }
         }
@@ -192,7 +207,11 @@ struct CategoryBubble: View {
                 .foregroundColor(.black)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
-                .background(Color(UIColor.systemGray6))
+                .background(Color.white)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20)
+                        .stroke(Color(UIColor.systemGray5), lineWidth: 1)
+                )
                 .cornerRadius(20)
         }
     }
