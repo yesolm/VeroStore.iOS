@@ -300,25 +300,133 @@ struct ErrorView: View {
 struct BannersCarousel: View {
     let banners: [BannerDTO]
     @State private var currentIndex = 0
+    @State private var selectedBanner: BannerDTO?
+    @State private var navigateToProduct: ProductDTO?
+    @State private var navigateToCategory: CategoryDTO?
+    @State private var showWebView = false
+    @State private var webURL: String?
 
     var body: some View {
         TabView(selection: $currentIndex) {
             ForEach(Array(banners.enumerated()), id: \.element.id) { index, banner in
-                AsyncImage(url: URL(string: banner.imageUrl ?? "")) { image in
-                    image
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                } placeholder: {
-                    Rectangle()
-                        .fill(Color(UIColor.systemGray6))
+                Button(action: {
+                    handleBannerTap(banner)
+                }) {
+                    AsyncImage(url: URL(string: banner.imageUrl ?? "")) { image in
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                    } placeholder: {
+                        Rectangle()
+                            .fill(Color.lightGray)
+                    }
+                    .frame(height: 180)
+                    .clipped()
                 }
-                .frame(height: 180)
-                .clipped()
                 .tag(index)
             }
         }
         .frame(height: 180)
         .tabViewStyle(PageTabViewStyle(indexDisplayMode: .automatic))
+        .background(
+            Group {
+                if let product = navigateToProduct {
+                    NavigationLink(
+                        destination: ProductDetailView(product: product),
+                        isActive: Binding(
+                            get: { navigateToProduct != nil },
+                            set: { if !$0 { navigateToProduct = nil } }
+                        )
+                    ) {
+                        EmptyView()
+                    }
+                }
+
+                if let category = navigateToCategory {
+                    NavigationLink(
+                        destination: CategoryProductsListView(
+                            category: category,
+                            storeId: category.id
+                        ),
+                        isActive: Binding(
+                            get: { navigateToCategory != nil },
+                            set: { if !$0 { navigateToCategory = nil } }
+                        )
+                    ) {
+                        EmptyView()
+                    }
+                }
+            }
+        )
+        .sheet(isPresented: $showWebView) {
+            if let urlString = webURL, let url = URL(string: urlString) {
+                SafariView(url: url)
+            }
+        }
+    }
+
+    private func handleBannerTap(_ banner: BannerDTO) {
+        guard let linkType = banner.linkType?.lowercased() else { return }
+
+        switch linkType {
+        case "product":
+            if let productId = banner.linkProductId {
+                Task {
+                    await loadProduct(id: productId)
+                }
+            }
+
+        case "category":
+            if let categoryId = banner.linkCategoryId {
+                let category = CategoryDTO(
+                    id: categoryId,
+                    uuid: UUID(),
+                    name: banner.linkCategoryName ?? "Category",
+                    description: nil,
+                    imageUrl: nil,
+                    sortOrder: 0,
+                    isActive: true,
+                    created: Date(),
+                    updated: Date(),
+                    storeCategoryStatus: nil
+                )
+                navigateToCategory = category
+            }
+
+        case "url":
+            if let url = banner.linkUrl {
+                webURL = url
+                showWebView = true
+            }
+
+        default:
+            break
+        }
+    }
+
+    private func loadProduct(id: Int) async {
+        do {
+            let product = try await APIService.shared.fetchProduct(id: id, locationId: nil)
+            await MainActor.run {
+                navigateToProduct = product
+            }
+        } catch {
+            print("Failed to load product: \(error)")
+        }
+    }
+}
+
+// SafariView for opening web URLs
+import SafariServices
+
+struct SafariView: UIViewControllerRepresentable {
+    let url: URL
+
+    func makeUIViewController(context: Context) -> SFSafariViewController {
+        return SFSafariViewController(url: url)
+    }
+
+    func updateUIViewController(_ uiViewController: SFSafariViewController, context: Context) {
     }
 }
 
