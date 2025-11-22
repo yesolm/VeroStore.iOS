@@ -12,15 +12,19 @@ import UserNotifications
 struct OnboardingView: View {
     @State private var currentPage = 0
     @State private var showMainApp = false
+    @StateObject private var locationManager = LocationManager.shared
 
     var body: some View {
         ZStack {
             if currentPage == 0 {
-                LocationPermissionView {
-                    withAnimation {
-                        currentPage = 1
-                    }
-                }
+                LocationPermissionView(
+                    onContinue: {
+                        withAnimation {
+                            currentPage = 1
+                        }
+                    },
+                    locationManager: locationManager
+                )
             } else {
                 NotificationPermissionView {
                     completeOnboarding()
@@ -40,6 +44,8 @@ struct OnboardingView: View {
 
 struct LocationPermissionView: View {
     let onContinue: () -> Void
+    @ObservedObject var locationManager: LocationManager
+    @State private var isRequestingPermission = false
 
     var body: some View {
         VStack(spacing: 30) {
@@ -63,11 +69,8 @@ struct LocationPermissionView: View {
 
             VStack(spacing: 15) {
                 Button(action: {
-                    LocationManager.shared.requestPermission()
-                    // Give the permission dialog time to appear
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                        onContinue()
-                    }
+                    isRequestingPermission = true
+                    locationManager.requestPermission()
                 }) {
                     Text("Enable Location")
                         .font(.system(size: 16, weight: .semibold))
@@ -77,6 +80,7 @@ struct LocationPermissionView: View {
                         .background(Color.primaryOrange)
                         .cornerRadius(12)
                 }
+                .disabled(isRequestingPermission)
 
                 Button(action: onContinue) {
                     Text("Skip for now")
@@ -86,6 +90,15 @@ struct LocationPermissionView: View {
             }
             .padding(.horizontal, 40)
             .padding(.bottom, 50)
+        }
+        .onChange(of: locationManager.authorizationStatus) { _, newStatus in
+            // Once the user responds to the permission (granted or denied), continue
+            if isRequestingPermission && newStatus != .notDetermined {
+                print("📍 User responded to permission, continuing...")
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    onContinue()
+                }
+            }
         }
     }
 }
@@ -153,16 +166,16 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     static let shared = LocationManager()
 
     private let manager = CLLocationManager()
+    @Published var authorizationStatus: CLAuthorizationStatus
 
     private override init() {
+        self.authorizationStatus = CLLocationManager().authorizationStatus
         super.init()
         manager.delegate = self
     }
 
     func requestPermission() {
-        // Check current authorization status
         let status = manager.authorizationStatus
-
         print("📍 Current location authorization status: \(status.rawValue)")
 
         if status == .notDetermined {
@@ -170,6 +183,7 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             manager.requestWhenInUseAuthorization()
         } else {
             print("📍 Location already authorized or denied: \(status.rawValue)")
+            authorizationStatus = status
         }
     }
 
@@ -178,6 +192,8 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         let status = manager.authorizationStatus
         print("📍 Location authorization changed to: \(status.rawValue)")
+
+        authorizationStatus = status
 
         switch status {
         case .authorizedWhenInUse, .authorizedAlways:

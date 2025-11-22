@@ -145,7 +145,57 @@ class APIClient {
             }
 
             let decoder = JSONDecoder()
-            decoder.dateDecodingStrategy = .iso8601
+            decoder.dateDecodingStrategy = .custom { decoder in
+                let container = try decoder.singleValueContainer()
+                let dateString = try container.decode(String.self)
+
+                // Try multiple date formats
+                let formatters = [
+                    // ISO8601 with fractional seconds and no timezone
+                    { () -> DateFormatter in
+                        let formatter = DateFormatter()
+                        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS"
+                        formatter.locale = Locale(identifier: "en_US_POSIX")
+                        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+                        return formatter
+                    }(),
+                    // ISO8601 with fractional seconds (shorter)
+                    { () -> DateFormatter in
+                        let formatter = DateFormatter()
+                        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS"
+                        formatter.locale = Locale(identifier: "en_US_POSIX")
+                        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+                        return formatter
+                    }(),
+                    // ISO8601 without fractional seconds
+                    { () -> DateFormatter in
+                        let formatter = DateFormatter()
+                        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+                        formatter.locale = Locale(identifier: "en_US_POSIX")
+                        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+                        return formatter
+                    }(),
+                    // Standard ISO8601 with timezone
+                    ISO8601DateFormatter()
+                ]
+
+                for formatter in formatters {
+                    if let iso8601Formatter = formatter as? ISO8601DateFormatter {
+                        if let date = iso8601Formatter.date(from: dateString) {
+                            return date
+                        }
+                    } else if let dateFormatter = formatter as? DateFormatter {
+                        if let date = dateFormatter.date(from: dateString) {
+                            return date
+                        }
+                    }
+                }
+
+                throw DecodingError.dataCorruptedError(
+                    in: container,
+                    debugDescription: "Cannot decode date string: \(dateString)"
+                )
+            }
 
             do {
                 return try decoder.decode(T.self, from: data)
