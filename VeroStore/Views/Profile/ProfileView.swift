@@ -97,20 +97,24 @@ struct LoggedInProfileView: View {
                         .padding(.bottom, 15)
 
                     VStack(spacing: 0) {
-                        ProfileMenuButton(
-                            icon: "bag",
-                            title: "My Orders",
-                            iconColor: .primaryOrange
-                        )
+                        NavigationLink(destination: MyOrdersView()) {
+                            ProfileMenuButton(
+                                icon: "bag",
+                                title: "My Orders",
+                                iconColor: .primaryOrange
+                            )
+                        }
 
                         Divider()
                             .padding(.leading, 60)
 
-                        ProfileMenuButton(
-                            icon: "gearshape",
-                            title: "Settings",
-                            iconColor: .primaryOrange
-                        )
+                        NavigationLink(destination: SettingsView()) {
+                            ProfileMenuButton(
+                                icon: "gearshape",
+                                title: "Settings",
+                                iconColor: .primaryOrange
+                            )
+                        }
 
                         Divider()
                             .padding(.leading, 60)
@@ -236,25 +240,23 @@ struct ProfileMenuButton: View {
     var iconColor: Color = .primaryOrange
 
     var body: some View {
-        Button(action: {}) {
-            HStack(spacing: 15) {
-                Image(systemName: icon)
-                    .foregroundColor(iconColor)
-                    .frame(width: 30)
+        HStack(spacing: 15) {
+            Image(systemName: icon)
+                .foregroundColor(iconColor)
+                .frame(width: 30)
 
-                Text(title)
-                    .font(.system(size: 16))
-                    .foregroundColor(.black)
+            Text(title)
+                .font(.system(size: 16))
+                .foregroundColor(.black)
 
-                Spacer()
+            Spacer()
 
-                Image(systemName: "chevron.right")
-                    .foregroundColor(.gray)
-                    .font(.system(size: 14))
-            }
-            .padding()
-            .background(Color.white)
+            Image(systemName: "chevron.right")
+                .foregroundColor(.gray)
+                .font(.system(size: 14))
         }
+        .padding()
+        .background(Color.white)
     }
 }
 

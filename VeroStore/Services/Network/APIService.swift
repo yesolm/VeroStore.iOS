@@ -244,4 +244,27 @@ class APIService {
         )
         return response.isInWishlist
     }
+
+    // MARK: - Orders
+
+    func fetchOrders(
+        pageNumber: Int = 1,
+        pageSize: Int = 20
+    ) async throws -> OrderListResponseDTO {
+        return try await client.request(
+            endpoint: "/orders",
+            queryParameters: [
+                "pageNumber": "\(pageNumber)",
+                "pageSize": "\(pageSize)"
+            ],
+            requiresAuth: true
+        )
+    }
+
+    func fetchOrder(id: Int) async throws -> OrderDTO {
+        return try await client.request(
+            endpoint: "/orders/\(id)",
+            requiresAuth: true
+        )
+    }
 }
