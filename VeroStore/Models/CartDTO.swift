@@ -15,6 +15,16 @@ struct CartDTO: Codable, Identifiable {
     let lastModifiedDate: Date?
     let items: [CartItemDTO]?
 
+    // Explicit initializer
+    init(id: Int, userId: Int, storeId: Int, createdDate: Date, lastModifiedDate: Date?, items: [CartItemDTO]?) {
+        self.id = id
+        self.userId = userId
+        self.storeId = storeId
+        self.createdDate = createdDate
+        self.lastModifiedDate = lastModifiedDate
+        self.items = items
+    }
+
     var subtotal: Double {
         items?.reduce(0) { $0 + $1.totalPrice } ?? 0
     }
