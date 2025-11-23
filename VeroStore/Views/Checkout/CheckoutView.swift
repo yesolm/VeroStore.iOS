@@ -446,14 +446,17 @@ class CheckoutViewModel: ObservableObject {
             id: 1,
             userId: 1,
             storeId: 1,
-            subtotal: 100.0,
-            tax: 8.0,
-            shippingFee: 5.0,
-            discount: 0,
-            totalAmount: 113.0,
-            created: Date(),
-            updated: Date(),
-            items: []
+            createdDate: Date(),
+            lastModifiedDate: Date(),
+            items: [
+                CartItemDTO(
+                    productId: 1,
+                    productName: "Sample Product",
+                    productImageUrl: nil,
+                    productPrice: 29.99,
+                    quantity: 2
+                )
+            ]
         ))
     }
 }
