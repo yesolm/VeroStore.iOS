@@ -397,13 +397,11 @@ class CheckoutViewModel: ObservableObject {
         guard let cart = cart else { return }
 
         let request = paymentManager.createApplePayRequest(for: cart)
-
-        if let controller = PKPaymentAuthorizationController(paymentRequest: request) {
-            controller.delegate = paymentManager
-            controller.present { presented in
-                if !presented {
-                    print("Failed to present Apple Pay")
-                }
+        let controller = PKPaymentAuthorizationController(paymentRequest: request)
+        controller.delegate = paymentManager
+        controller.present { presented in
+            if !presented {
+                print("Failed to present Apple Pay")
             }
         }
     }
@@ -426,7 +424,7 @@ class CheckoutViewModel: ObservableObject {
         )
 
         do {
-            let response = try await apiService.checkout(request: request)
+            _ = try await apiService.checkout(request: request)
             isProcessing = false
             showSuccessAlert = true
 
