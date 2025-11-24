@@ -118,7 +118,7 @@ struct CartView: View {
 
                         // Checkout Button
                         NavigationLink(
-                            destination: cart.map { CheckoutView(cart: $0) },
+                            destination: CheckoutView(cart: cart),
                             isActive: $navigateToCheckout
                         ) {
                             EmptyView()
