@@ -15,6 +15,16 @@ struct CartDTO: Codable, Identifiable {
     let lastModifiedDate: Date?
     let items: [CartItemDTO]?
 
+    // Coding keys for Codable conformance
+    enum CodingKeys: String, CodingKey {
+        case id
+        case userId
+        case storeId
+        case createdDate
+        case lastModifiedDate
+        case items
+    }
+
     // Explicit initializer
     init(id: Int, userId: Int, storeId: Int, createdDate: Date, lastModifiedDate: Date?, items: [CartItemDTO]?) {
         self.id = id
