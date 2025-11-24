@@ -383,12 +383,15 @@ struct BannersCarousel: View {
                     uuid: UUID(),
                     name: banner.linkCategoryName ?? "Category",
                     description: nil,
+                    slug: nil,
+                    parentId: nil,
+                    parentName: nil,
                     imageUrl: nil,
-                    sortOrder: 0,
+                    displayOrder: 0,
                     isActive: true,
                     created: Date(),
                     updated: Date(),
-                    storeCategoryStatus: nil
+                    storeCategories: nil
                 )
                 navigateToCategory = category
             }

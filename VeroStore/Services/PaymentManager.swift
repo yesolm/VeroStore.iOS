@@ -76,7 +76,7 @@ class PaymentManager: NSObject, ObservableObject {
         let request = PKPaymentRequest()
         request.merchantIdentifier = merchantIdentifier
         request.supportedNetworks = [.visa, .masterCard, .amex, .discover]
-        request.merchantCapabilities = .capability3DS
+        request.merchantCapabilities = .threeDSecure
         request.countryCode = countryCode
         request.currencyCode = currencyCode
 
@@ -205,7 +205,7 @@ extension PaymentManager: PKPaymentAuthorizationControllerDelegate {
         handler completion: @escaping (PKPaymentAuthorizationResult) -> Void
     ) {
         Task { @MainActor in
-            await self.processApplePayPayment(payment: payment) { response, error in
+            self.processApplePayPayment(payment: payment) { response, error in
                 if let error = error {
                     let result = PKPaymentAuthorizationResult(status: .failure, errors: [error])
                     completion(result)
