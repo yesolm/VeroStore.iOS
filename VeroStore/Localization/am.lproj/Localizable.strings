@@ -1,0 +1,115 @@
+/* 
+  Localizable.strings (Amharic)
+  VeroStore
+*/
+
+/* Common */
+"home" = "መነሻ";
+"products" = "ምርቶች";
+"orders" = "የእኔ ትዕዛዞች";
+"cart" = "ጋሪ";
+"wishlist" = "የምወደዉ";
+"profile" = "መገለጫ";
+"categories" = "ምድቦች";
+"notifications" = "ማስታወቂያዎች";
+"login" = "ግባ";
+"register" = "ተመዝገብ";
+"logout" = "ውጣ";
+"search" = "ፈልግ";
+"search_products" = "ምርቶችን ይፈልጉ...";
+"add_to_cart" = "ወደ ጋሪ ጨምር";
+"loading" = "በመጫን ላይ...";
+"error" = "ስህተት";
+"retry" = "እንደገና ሞክር";
+"cancel" = "ተወው";
+"save" = "አስቀምጥ";
+"close" = "ዝጋ";
+"back" = "ተመለስ";
+"continue_text" = "ቀጥል";
+
+/* Language Selection */
+"select_language" = "የሚመርጡትን ቋንቋ ይምረጡ";
+"language_selection_message" = "ለመተግበሪያው የሚመርጡትን ቋንቋ ይምረጡ";
+
+/* Header */
+"select_store" = "መደብር ምረጥ";
+"all" = "ሁሉም";
+
+/* Products */
+"all_products" = "ሁሉም ምርቶች";
+"available_in" = "የሚገኝበት";
+"no_products" = "ምንም ምርቶች አልተገኙም";
+"loading_products" = "ምርቶችን በመጫን ላይ...";
+"in_stock" = "%d በክምችት ውስጥ";
+"out_of_stock" = "ከክምችት ውጪ";
+"product_not_found" = "ምርት አልተገኘም";
+
+/* Cart */
+"title_cart" = "የግዢ ጋሪ";
+"empty_cart_title" = "ጋሪዎ ባዶ ነው";
+"empty_cart_message" = "ለመጀመር አንዳንድ ምርቶችን ጨምር!";
+"continue_shopping" = "ግዢን ቀጥል";
+"order_summary" = "የትዕዛዝ ማጠቃለያ";
+"subtotal" = "ንዑስ ጠቅላላ";
+"items" = "%d ንጥሎች";
+"shipping" = "ማጓጓዣ";
+"shipping_calculated" = "በጨረታ ላይ ይሰላል";
+"total" = "ጠቅላላ";
+"proceed_to_checkout" = "ወደ ጨረታ ቀጥል";
+
+/* Profile */
+"title_profile" = "የእኔ መገለጫ";
+"welcome" = "እንኳን ደህና መጡ!";
+"login_message" = "መገለጫዎን እና ትዕዛዞችዎን ለማግኘት ይግቡ";
+"login_signup" = "ግባ / ተመዝገብ";
+"my_orders" = "የእኔ ትዕዛዞች";
+"my_wishlist" = "የእኔ የምወደዉ";
+"settings" = "ቅንብሮች";
+"language" = "ቋንቋ";
+
+/* Auth */
+"welcome_back" = "እንኳን ደህና መጡ";
+"sign_in_to_account" = "ወደ ሂሳብዎ ይግቡ";
+"email_address" = "የኢሜይል አድራሻ";
+"password" = "የይለፍ ቃል";
+"forgot_password" = "የይለፍ ቃል ረሳሁ?";
+"forgot_password_title" = "የይለፍ ቃል ረሳሁ";
+"forgot_password_subtitle" = "የኢሜይል አድራሻዎን ያስገቡ እና የይለፍ ቃልዎን ዳግም ለማስተካከል አገናኝ እንልክልዎታለን";
+"send_reset_link" = "የዳግም ማስተካከያ አገናኝ ላክ";
+"sign_in" = "ግባ";
+"dont_have_account" = "ሂሳብ የሎትም?";
+"sign_up" = "ተመዝግብ";
+"create_account" = "ሂሳብ ፍጠር";
+"first_name" = "የመጀመሪያ ስም";
+"last_name" = "የአያት ስም";
+"confirm_password" = "የይለፍ ቃል ያረጋግጡ";
+
+/* Home */
+"trending" = "ታዋቂ";
+"new_arrivals" = "አዲስ የመጡ";
+"best_sellers" = "በጣም የተሸጡ";
+"deals" = "ቅናሾች";
+
+/* Onboarding */
+"welcome_to_vero" = "እንኳን ወደ ቬሮ ስቶር በደህና መጡ";
+"welcome_description" = "ከሚወዷቸው መደብሮች ይግዙ እና ሁሉንም ወደ በር ደረጃዎ ይድረስ";
+"enable_location" = "አካባቢን ያንቁ";
+"location_description" = "በአቅራቢያዎ ያሉ መደብሮችን እንድናሳይዎት ያግዙን";
+"allow_location" = "አካባቢን ፍቀድ";
+"stay_updated" = "ማስታወቂያ ይቀበሉ";
+"notifications_description" = "ስለ ትዕዛዞች እና ቅናሾች ማሳወቂያ ይቀበሉ";
+"enable_notifications" = "ማሳወቂያዎችን ያንቁ";
+"get_started" = "ጀምር";
+"join_vero_today" = "ዛሬ ቬሮ ስቶር ይቀላቀሉ";
+"phone_optional" = "ስልክ (አማራጭ)";
+"please_fill_all_fields" = "እባክዎ ሁሉንም መስኮች ይሙሉ";
+"please_fill_required_fields" = "እባክዎ ሁሉንም የሚጠይቁ መስኮች ይሙሉ";
+"passwords_do_not_match" = "የይለፍ ቃላት አይጣጣሙም";
+"reset_link_sent" = "የዳግም ማስተካከያ አገናኝ ተልኳል";
+"reset_link_message" = "የይለፍ ቃል ዳግም ማስተካከያ መመሪያዎችን ለማግኘት ኢሜይልዎን ይመልከቱ";
+"already_have_account" = "አስቀድመው ሂሳብ አላችሁ?";
+"change_language" = "ቋንቋ ለውጥ";
+"checkout" = "ጨረታ";
+"checkout_functionality_coming_soon" = "ጨረታ ተግባር በቅርቡ ይመጣል";
+"done" = "ተጠናቋል";
+"vero_store" = "ቬሮ ስቶር";

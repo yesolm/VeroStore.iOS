@@ -1,0 +1,115 @@
+/* 
+  Localizable.strings (English)
+  VeroStore
+*/
+
+/* Common */
+"home" = "Home";
+"products" = "Products";
+"orders" = "My Orders";
+"cart" = "Cart";
+"wishlist" = "Wishlist";
+"profile" = "Profile";
+"categories" = "Categories";
+"notifications" = "Notifications";
+"login" = "Login";
+"register" = "Register";
+"logout" = "Logout";
+"search" = "Search";
+"search_products" = "Search products...";
+"add_to_cart" = "Add to Cart";
+"loading" = "Loading...";
+"error" = "Error";
+"retry" = "Retry";
+"cancel" = "Cancel";
+"save" = "Save";
+"close" = "Close";
+"back" = "Back";
+"continue_text" = "Continue";
+
+/* Language Selection */
+"select_language" = "Select Your Preferred Language";
+"language_selection_message" = "Choose your preferred language for the app";
+
+/* Header */
+"select_store" = "Select Store";
+"all" = "All";
+
+/* Products */
+"all_products" = "All Products";
+"available_in" = "Available in";
+"no_products" = "No products found";
+"loading_products" = "Loading products...";
+"in_stock" = "%d in stock";
+"out_of_stock" = "Out of stock";
+"product_not_found" = "Product not found";
+
+/* Cart */
+"title_cart" = "Shopping Cart";
+"empty_cart_title" = "Your cart is empty";
+"empty_cart_message" = "Add some products to get started!";
+"continue_shopping" = "Continue Shopping";
+"order_summary" = "Order Summary";
+"subtotal" = "Subtotal";
+"items" = "%d items";
+"shipping" = "Shipping";
+"shipping_calculated" = "Calculated at checkout";
+"total" = "Total";
+"proceed_to_checkout" = "Proceed to Checkout";
+
+/* Profile */
+"title_profile" = "My Profile";
+"welcome" = "Welcome!";
+"login_message" = "Login to access your profile and orders";
+"login_signup" = "Login / Sign Up";
+"my_orders" = "My Orders";
+"my_wishlist" = "My Wishlist";
+"settings" = "Settings";
+"language" = "Language";
+
+/* Auth */
+"welcome_back" = "Welcome Back";
+"sign_in_to_account" = "Sign in to your account";
+"email_address" = "Email Address";
+"password" = "Password";
+"forgot_password" = "Forgot password?";
+"forgot_password_title" = "Forgot Password";
+"forgot_password_subtitle" = "Enter your email address and we'll send you a link to reset your password";
+"send_reset_link" = "Send Reset Link";
+"sign_in" = "Sign In";
+"dont_have_account" = "Don't have an account?";
+"sign_up" = "Sign up";
+"create_account" = "Create Account";
+"first_name" = "First Name";
+"last_name" = "Last Name";
+"confirm_password" = "Confirm Password";
+
+/* Home */
+"trending" = "Trending";
+"new_arrivals" = "New Arrivals";
+"best_sellers" = "Best Sellers";
+"deals" = "Deals";
+
+/* Onboarding */
+"welcome_to_vero" = "Welcome to Vero Store";
+"welcome_description" = "Shop from your favorite stores and get everything delivered to your doorstep";
+"enable_location" = "Enable Location";
+"location_description" = "Help us show you stores near you";
+"allow_location" = "Allow Location";
+"stay_updated" = "Stay Updated";
+"notifications_description" = "Get notified about orders and offers";
+"enable_notifications" = "Enable Notifications";
+"get_started" = "Get Started";
+"join_vero_today" = "Join Vero Store today";
+"phone_optional" = "Phone (Optional)";
+"please_fill_all_fields" = "Please fill all fields";
+"please_fill_required_fields" = "Please fill all required fields";
+"passwords_do_not_match" = "Passwords do not match";
+"reset_link_sent" = "Reset link sent";
+"reset_link_message" = "Please check your email for password reset instructions";
+"already_have_account" = "Already have an account?";
+"change_language" = "Change Language";
+"checkout" = "Checkout";
+"checkout_functionality_coming_soon" = "Checkout functionality coming soon";
+"done" = "Done";
+"vero_store" = "Vero Store";
