@@ -46,28 +46,45 @@ struct AuthView: View {
                     }
                     
                     if !isLogin {
-                        TextField("first_name".localized, text: $firstName)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                        StylishTextField(
+                            icon: "person.fill",
+                            placeholder: "first_name".localized,
+                            text: $firstName
+                        )
                         
-                        TextField("last_name".localized, text: $lastName)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                        StylishTextField(
+                            icon: "person.fill",
+                            placeholder: "last_name".localized,
+                            text: $lastName
+                        )
                     }
                     
-                    TextField("email_address".localized, text: $email)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .keyboardType(.emailAddress)
-                        .autocapitalization(.none)
+                    StylishTextField(
+                        icon: "envelope.fill",
+                        placeholder: "email_address".localized,
+                        text: $email,
+                        keyboardType: .emailAddress
+                    )
                     
-                    SecureField("password".localized, text: $password)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                    StylishSecureField(
+                        icon: "lock.fill",
+                        placeholder: "password".localized,
+                        text: $password
+                    )
                     
                     if !isLogin {
-                        SecureField("confirm_password".localized, text: $confirmPassword)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                        StylishSecureField(
+                            icon: "lock.fill",
+                            placeholder: "confirm_password".localized,
+                            text: $confirmPassword
+                        )
                         
-                        TextField("phone_optional".localized, text: $phone)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                            .keyboardType(.phonePad)
+                        StylishTextField(
+                            icon: "phone.fill",
+                            placeholder: "phone_optional".localized,
+                            text: $phone,
+                            keyboardType: .phonePad
+                        )
                     }
                     
                     Button(action: {
@@ -77,19 +94,31 @@ struct AuthView: View {
                             register()
                         }
                     }) {
-                        if isLoading {
-                            ProgressView()
-                                .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                        } else {
-                            Text(isLogin ? "sign_in".localized : "create_account".localized)
-                                .font(.headline)
+                        HStack(spacing: 12) {
+                            if isLoading {
+                                ProgressView()
+                                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                            } else {
+                                Image(systemName: isLogin ? "arrow.right.circle.fill" : "person.badge.plus.fill")
+                                    .font(.system(size: 20))
+                                Text(isLogin ? "sign_in".localized : "create_account".localized)
+                                    .font(.headline)
+                                    .fontWeight(.semibold)
+                            }
                         }
                     }
                     .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(isLoading ? Color.appPrimary.opacity(0.6) : Color.appPrimary)
+                    .padding(.vertical, 16)
+                    .background(
+                        LinearGradient(
+                            colors: isLoading ? [Color.appPrimary.opacity(0.6)] : [Color.appPrimary, Color.appPrimary.opacity(0.8)],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
                     .foregroundColor(.white)
-                    .cornerRadius(10)
+                    .cornerRadius(14)
+                    .shadow(color: Color.appPrimary.opacity(0.3), radius: 8, x: 0, y: 4)
                     .disabled(isLoading)
                     
                     if isLogin {
@@ -255,3 +284,65 @@ struct ForgotPasswordView: View {
         }
     }
 }
+// MARK: - Stylish Text Field Components
+
+struct StylishTextField: View {
+    let icon: String
+    let placeholder: String
+    @Binding var text: String
+    var keyboardType: UIKeyboardType = .default
+    
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .foregroundColor(.appPrimary)
+                .frame(width: 24)
+            
+            TextField(placeholder, text: $text)
+                .keyboardType(keyboardType)
+                .autocapitalization(keyboardType == .emailAddress ? .none : .words)
+        }
+        .padding()
+        .background(Color(.systemGray6))
+        .cornerRadius(12)
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color.appPrimary.opacity(0.3), lineWidth: 1)
+        )
+    }
+}
+
+struct StylishSecureField: View {
+    let icon: String
+    let placeholder: String
+    @Binding var text: String
+    @State private var isSecure = true
+    
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .foregroundColor(.appPrimary)
+                .frame(width: 24)
+            
+            if isSecure {
+                SecureField(placeholder, text: $text)
+            } else {
+                TextField(placeholder, text: $text)
+                    .autocapitalization(.none)
+            }
+            
+            Button(action: { isSecure.toggle() }) {
+                Image(systemName: isSecure ? "eye.slash.fill" : "eye.fill")
+                    .foregroundColor(.gray)
+            }
+        }
+        .padding()
+        .background(Color(.systemGray6))
+        .cornerRadius(12)
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color.appPrimary.opacity(0.3), lineWidth: 1)
+        )
+    }
+}
+

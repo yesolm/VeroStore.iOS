@@ -4,4 +4,13 @@
    <FileRef
       location = "self:">
    </FileRef>
+   <FileRef
+      location = "group:BannerDebugView.swift">
+   </FileRef>
+   <FileRef
+      location = "group:BANNER_TROUBLESHOOTING.md">
+   </FileRef>
+   <FileRef
+      location = "group:MISSING_LOCALIZATIONS.md">
+   </FileRef>
 </Workspace>

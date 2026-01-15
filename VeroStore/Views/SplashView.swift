@@ -24,31 +24,34 @@ struct SplashView: View {
                 })
             } else {
                 ZStack {
-                    Color.white.ignoresSafeArea()
+                    // Background gradient
+                    LinearGradient(
+                        colors: [Color.white, Color.appPrimary.opacity(0.05)],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                    .ignoresSafeArea()
                     
                     VStack {
                         Spacer()
                         
-                        // App Logo with Cart text
-                        HStack(spacing: 16) {
-                            // Your actual app icon from Assets
-                            Image(uiImage: UIImage(named: "AppIcon") ?? UIImage())
-                                .resizable()
-                                .frame(width: 120, height: 120)
-                                .cornerRadius(24)
-                                .shadow(color: .appPrimary.opacity(0.3), radius: 20, x: 0, y: 10)
-                            
-                            Text("Cart")
-                                .font(.system(size: 48, weight: .bold))
-                                .foregroundColor(.appPrimary)
-                        }
+                        // App Logo
+                        Image("logo")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: 120, height: 120)
+                            .scaleEffect(isReady ? 1.0 : 0.8)
+                            .opacity(isReady ? 1.0 : 0.0)
+                            .animation(.spring(response: 0.6, dampingFraction: 0.7), value: isReady)
                         
                         Spacer()
                         
+                        // Loading indicator
                         if !isReady {
                             ProgressView()
-                                .tint(.appPrimary)
-                                .padding()
+                                .progressViewStyle(CircularProgressViewStyle(tint: .appPrimary))
+                                .scaleEffect(1.5)
+                                .padding(.bottom, 50)
                         }
                     }
                 }
@@ -67,14 +70,21 @@ struct SplashView: View {
     }
     
     private func checkOnboardingStatus() {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+        // Show logo animation immediately
+        withAnimation {
             isReady = true
+        }
+        
+        // Wait a bit then proceed
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
             let hasCompletedOnboarding = UserDefaults.standard.bool(forKey: "has_completed_onboarding")
             
-            if hasCompletedOnboarding {
-                showMain = true
-            } else {
-                showOnboarding = true
+            withAnimation {
+                if hasCompletedOnboarding {
+                    showMain = true
+                } else {
+                    showOnboarding = true
+                }
             }
         }
     }

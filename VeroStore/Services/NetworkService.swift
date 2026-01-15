@@ -37,6 +37,10 @@ class NetworkService {
         request.httpMethod = method
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
+        // Add Accept-Language header for backend translations (Android app pattern)
+        let currentLanguage = LocalizationHelper.shared.currentLanguage
+        request.setValue(currentLanguage, forHTTPHeaderField: "Accept-Language")
+        
         if let token = authToken {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }

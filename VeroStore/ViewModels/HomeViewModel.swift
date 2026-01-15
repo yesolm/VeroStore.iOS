@@ -25,7 +25,12 @@ class HomeViewModel: ObservableObject {
     private let storeService = StoreService.shared
     
     func loadData() async {
-        isLoading = true
+        // Don't clear data on refresh - just set loading
+        let isRefresh = !banners.isEmpty || !categories.isEmpty || !trendingProducts.isEmpty
+        
+        if !isRefresh {
+            isLoading = true
+        }
         error = nil
         
         // Wait for stores to load if not already loaded
@@ -79,7 +84,14 @@ class HomeViewModel: ObservableObject {
     }
     
     private func loadBanners(storeId: Int?) async throws {
-        banners = try await bannerService.getActiveBanners(storeId: storeId)
+        do {
+            banners = try await bannerService.getActiveBanners(storeId: storeId)
+            print("✅ Loaded \(banners.count) banners successfully")
+        } catch {
+            print("❌ Failed to load banners: \(error)")
+            // Don't throw - banners are optional
+            banners = []
+        }
     }
     
     private func loadProducts(storeId: Int?) async throws {

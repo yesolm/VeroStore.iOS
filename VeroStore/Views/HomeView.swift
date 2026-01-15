@@ -1,4 +1,5 @@
 //
+//
 //  HomeView.swift
 //  VeroStore
 //
@@ -6,6 +7,7 @@
 //
 
 import SwiftUI
+import WebKit
 
 struct HomeView: View {
     @StateObject private var viewModel = HomeViewModel()
@@ -47,17 +49,6 @@ struct HomeView: View {
                             }
                         }
                     } else {
-                        // Banners
-                        if !viewModel.banners.isEmpty {
-                            BannerGridView(banners: viewModel.banners)
-                                .frame(minHeight: 200)
-                        } else if viewModel.isLoading {
-                            Rectangle()
-                                .fill(Color.gray.opacity(0.2))
-                                .frame(height: 200)
-                                .redacted(reason: .placeholder)
-                        }
-                        
                         // Determine if store selector should be shown
                         let shouldShowStoreSelector = !viewModel.isLoading && !viewModel.categories.isEmpty
                         
@@ -68,7 +59,6 @@ struct HomeView: View {
                                 showStoreSelector: $showStoreSelector,
                                 selectedStore: storeService.selectedStore
                             )
-                            .padding(.horizontal)
                             
                             // Progress bar under categories
                             if viewModel.isLoading {
@@ -85,6 +75,11 @@ struct HomeView: View {
                                 .frame(height: 40)
                                 .padding(.horizontal)
                                 .redacted(reason: .placeholder)
+                        }
+                        
+                        // Banners - Android ViewPager2 style carousel (AFTER categories)
+                        if !viewModel.banners.isEmpty {
+                            BannerCarouselView(banners: viewModel.banners)
                         }
                         
                         // Trending Products
@@ -216,6 +211,97 @@ struct HomeView: View {
     }
 }
 
+struct BannerCarouselView: View {
+    let banners: [Banner]
+    @State private var currentIndex = 0
+    
+    var body: some View {
+        TabView(selection: $currentIndex) {
+            ForEach(Array(banners.enumerated()), id: \.element.id) { index, banner in
+                NavigationLink(destination: destinationView(for: banner)) {
+                    AsyncImage(url: URL(string: banner.imageUrl)) { phase in
+                        switch phase {
+                        case .empty:
+                            Rectangle()
+                                .fill(Color.gray.opacity(0.2))
+                                .overlay(ProgressView())
+                        case .success(let image):
+                            image
+                                .resizable()
+                                .scaledToFill()
+                        case .failure:
+                            Rectangle()
+                                .fill(Color.gray.opacity(0.2))
+                        @unknown default:
+                            Rectangle()
+                                .fill(Color.gray.opacity(0.2))
+                        }
+                    }
+                    .clipped()
+                }
+                .buttonStyle(PlainButtonStyle())
+                .tag(index)
+            }
+        }
+        .frame(height: 160)
+        .tabViewStyle(.page)
+    }
+    
+    @ViewBuilder
+    private func destinationView(for banner: Banner) -> some View {
+        switch banner.linkType?.lowercased() {
+        case "product":
+            if let productId = banner.linkProductId {
+                ProductDetailView(productId: productId)
+            } else {
+                EmptyView()
+            }
+        case "category":
+            if let categoryId = banner.linkCategoryId {
+                ProductsListView(categoryId: categoryId, categoryName: banner.title ?? "Category")
+            } else {
+                EmptyView()
+            }
+        case "url", "external":
+            if let urlString = banner.linkUrl, let url = URL(string: urlString) {
+                SafariView(url: url)
+            } else {
+                EmptyView()
+            }
+        default:
+            EmptyView()
+        }
+    }
+}
+
+// MARK: - Safari View for External Links
+struct SafariView: View {
+    let url: URL
+    
+    var body: some View {
+        WebView(url: url)
+            .navigationTitle("Loading...")
+            .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+// Simple WebView wrapper for external URLs
+struct WebView: UIViewRepresentable {
+    let url: URL
+    
+    func makeUIView(context: Context) -> WKWebView {
+        let webView = WKWebView()
+        webView.load(URLRequest(url: url))
+        return webView
+    }
+    
+    func updateUIView(_ uiView: WKWebView, context: Context) {}
+}
+
+// Import WebKit at the top of the file
+import WebKit
+
+// Keep old grid view for backward compatibility (used in ProfileView)
 struct BannerGridView: View {
     let banners: [Banner]
     private let columns = [GridItem(.flexible()), GridItem(.flexible())]
@@ -302,7 +388,8 @@ struct CategoryChipsView: View {
                     .buttonStyle(PlainButtonStyle())
                 }
             }
-            .padding(.horizontal)
+            .padding(.leading, 16)
+            .padding(.trailing, 0)
         }
     }
 }

@@ -15,7 +15,20 @@ struct Banner: Codable, Identifiable, Hashable {
     let linkUrl: String?
     let linkCategoryId: Int?
     let linkProductId: Int?
-    let deviceType: Int
+    let deviceType: String
     let isActive: Bool
-    let displayOrder: Int
+    let sortOrder: Int
+    
+    enum CodingKeys: String, CodingKey {
+        case id
+        case title
+        case imageUrl
+        case linkType
+        case linkUrl
+        case linkCategoryId
+        case linkProductId
+        case deviceType
+        case isActive
+        case sortOrder
+    }
 }

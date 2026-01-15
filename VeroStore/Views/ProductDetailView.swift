@@ -19,6 +19,7 @@ struct ProductDetailView: View {
     @State private var isLoading = true
     @State private var quantity = 1
     @State private var showAddedToCart = false
+    @State private var addedToCartMessage = ""
     @State private var showVariationError = false
     @State private var isInWishlist = false
     @State private var selectedImageIndex = 0
@@ -34,149 +35,144 @@ struct ProductDetailView: View {
                     .frame(minHeight: 400)
             } else if let product = product {
                 VStack(alignment: .leading, spacing: 0) {
-                    // Product Image - Full Width with floating heart button
-                    ZStack(alignment: .topTrailing) {
-                        if let images = product.images, !images.isEmpty {
-                            let selectedImage = images[selectedImageIndex]
-                            AsyncImage(url: URL(string: selectedImage.imageUrl)) { phase in
-                                switch phase {
-                                case .empty:
-                                    Rectangle()
-                                        .fill(Color.gray.opacity(0.2))
-                                        .frame(height: 400)
-                                        .overlay(
-                                            ProgressView()
-                                                .scaleEffect(1.5)
-                                        )
-                                case .success(let image):
-                                    image
-                                        .resizable()
-                                        .aspectRatio(contentMode: .fill)
-                                        .frame(height: 400)
-                                        .clipped()
-                                case .failure:
-                                    Rectangle()
-                                        .fill(Color.gray.opacity(0.2))
-                                        .frame(height: 400)
-                                        .overlay(
-                                            Image(systemName: "photo")
-                                                .font(.largeTitle)
-                                                .foregroundColor(.gray)
-                                        )
-                                @unknown default:
-                                    Rectangle()
-                                        .fill(Color.gray.opacity(0.2))
-                                        .frame(height: 400)
-                                }
-                            }
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 400)
-                        } else if let imageUrl = product.primaryImageUrl {
-                            AsyncImage(url: URL(string: imageUrl)) { phase in
-                                switch phase {
-                                case .empty:
-                                    Rectangle()
-                                        .fill(Color.gray.opacity(0.2))
-                                        .frame(height: 400)
-                                        .overlay(
-                                            ProgressView()
-                                                .scaleEffect(1.5)
-                                        )
-                                case .success(let image):
-                                    image
-                                        .resizable()
-                                        .aspectRatio(contentMode: .fill)
-                                        .frame(height: 400)
-                                        .clipped()
-                                case .failure:
-                                    Rectangle()
-                                        .fill(Color.gray.opacity(0.2))
-                                        .frame(height: 400)
-                                        .overlay(
-                                            Image(systemName: "photo")
-                                                .font(.largeTitle)
-                                                .foregroundColor(.gray)
-                                        )
-                                @unknown default:
-                                    Rectangle()
-                                        .fill(Color.gray.opacity(0.2))
-                                        .frame(height: 400)
-                                }
-                            }
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 400)
-                        }
-                        
-                        // Floating heart button
-                        Button(action: toggleWishlist) {
-                            ZStack {
-                                Circle()
-                                    .fill(Color.white)
-                                    .frame(width: 44, height: 44)
-                                    .shadow(color: .black.opacity(0.15), radius: 8, x: 0, y: 2)
-                                
-                                Image(systemName: isInWishlist ? "heart.fill" : "heart")
-                                    .font(.system(size: 20, weight: .semibold))
-                                    .foregroundColor(isInWishlist ? .red : .appPrimary)
-                            }
-                        }
-                        .padding(16)
-                    }
-                    
-                    // Image Thumbnails Gallery
-                    if let images = product.images, images.count > 1 {
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 12) {
-                                ForEach(Array(images.enumerated()), id: \.element.id) { index, image in
-                                    Button(action: {
-                                        withAnimation {
-                                            selectedImageIndex = index
-                                        }
-                                    }) {
-                                        AsyncImage(url: URL(string: image.imageUrl)) { phase in
-                                            switch phase {
-                                            case .empty:
-                                                Rectangle()
-                                                    .fill(Color.gray.opacity(0.2))
-                                                    .overlay(
-                                                        ProgressView()
-                                                            .scaleEffect(0.7)
-                                                    )
-                                            case .success(let image):
-                                                image
-                                                    .resizable()
-                                                    .aspectRatio(contentMode: .fill)
-                                                    .frame(width: 70, height: 70)
-                                                    .clipped()
-                                            case .failure:
-                                                Rectangle()
-                                                    .fill(Color.gray.opacity(0.2))
-                                                    .overlay(
-                                                        Image(systemName: "photo")
-                                                            .font(.caption)
-                                                            .foregroundColor(.gray)
-                                                    )
-                                            @unknown default:
-                                                Rectangle()
-                                                    .fill(Color.gray.opacity(0.2))
+                    // Product Image - Full Width with floating heart button - SWIPABLE
+                    VStack(spacing: 0) {
+                        ZStack(alignment: .topTrailing) {
+                            if let images = product.images, !images.isEmpty {
+                                TabView(selection: $selectedImageIndex) {
+                                    ForEach(Array(images.enumerated()), id: \.element.id) { index, image in
+                                        GeometryReader { geometry in
+                                            AsyncImage(url: URL(string: image.imageUrl)) { phase in
+                                                switch phase {
+                                                case .empty:
+                                                    Rectangle()
+                                                        .fill(Color.gray.opacity(0.2))
+                                                        .overlay(
+                                                            ProgressView()
+                                                                .scaleEffect(1.5)
+                                                        )
+                                                        .frame(width: geometry.size.width, height: 400)
+                                                case .success(let loadedImage):
+                                                    loadedImage
+                                                        .resizable()
+                                                        .aspectRatio(contentMode: .fit)
+                                                        .frame(width: geometry.size.width, height: 400)
+                                                case .failure:
+                                                    Rectangle()
+                                                        .fill(Color.gray.opacity(0.2))
+                                                        .overlay(
+                                                            Image(systemName: "photo")
+                                                                .font(.largeTitle)
+                                                                .foregroundColor(.gray)
+                                                        )
+                                                        .frame(width: geometry.size.width, height: 400)
+                                                @unknown default:
+                                                    Rectangle()
+                                                        .fill(Color.gray.opacity(0.2))
+                                                        .frame(width: geometry.size.width, height: 400)
+                                                }
                                             }
+                                            .frame(maxWidth: geometry.size.width)
                                         }
-                                        .frame(width: 70, height: 70)
-                                        .clipShape(RoundedRectangle(cornerRadius: 8))
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 8)
-                                                .stroke(
-                                                    selectedImageIndex == index ? Color.appPrimary : Color.gray.opacity(0.3),
-                                                    lineWidth: selectedImageIndex == index ? 3 : 1
-                                                )
-                                        )
+                                        .tag(index)
                                     }
                                 }
+                                .tabViewStyle(.page(indexDisplayMode: .never))
+                                .frame(height: 400)
+                            } else if let imageUrl = product.primaryImageUrl {
+                                GeometryReader { geometry in
+                                    AsyncImage(url: URL(string: imageUrl)) { phase in
+                                        switch phase {
+                                        case .empty:
+                                            Rectangle()
+                                                .fill(Color.gray.opacity(0.2))
+                                                .overlay(
+                                                    ProgressView()
+                                                        .scaleEffect(1.5)
+                                                )
+                                                .frame(width: geometry.size.width, height: 400)
+                                        case .success(let loadedImage):
+                                            loadedImage
+                                                .resizable()
+                                                .aspectRatio(contentMode: .fit)
+                                                .frame(width: geometry.size.width, height: 400)
+                                        case .failure:
+                                            Rectangle()
+                                                .fill(Color.gray.opacity(0.2))
+                                                .overlay(
+                                                    Image(systemName: "photo")
+                                                        .font(.largeTitle)
+                                                        .foregroundColor(.gray)
+                                                )
+                                                .frame(width: geometry.size.width, height: 400)
+                                        @unknown default:
+                                            Rectangle()
+                                                .fill(Color.gray.opacity(0.2))
+                                                .frame(width: geometry.size.width, height: 400)
+                                        }
+                                    }
+                                    .frame(maxWidth: geometry.size.width)
+                                }
+                                .frame(height: 400)
                             }
-                            .padding(.horizontal)
-                            .padding(.vertical, 12)
+                            
+                            // Floating heart button
+                            Button(action: toggleWishlist) {
+                                ZStack {
+                                    Circle()
+                                        .fill(Color.white)
+                                        .frame(width: 44, height: 44)
+                                        .shadow(color: .black.opacity(0.15), radius: 8, x: 0, y: 2)
+                                    
+                                    Image(systemName: isInWishlist ? "heart.fill" : "heart")
+                                        .font(.system(size: 20, weight: .semibold))
+                                        .foregroundColor(isInWishlist ? .red : .appPrimary)
+                                }
+                            }
+                            .padding(16)
                         }
-                        .background(Color.white)
+                        .frame(height: 400)
+                        
+                        // Thumbnail images
+                        if let images = product.images, images.count > 1 {
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack(spacing: 8) {
+                                    ForEach(Array(images.enumerated()), id: \.element.id) { index, image in
+                                        Button(action: {
+                                            withAnimation {
+                                                selectedImageIndex = index
+                                            }
+                                        }) {
+                                            AsyncImage(url: URL(string: image.imageUrl)) { phase in
+                                                switch phase {
+                                                case .success(let img):
+                                                    img
+                                                        .resizable()
+                                                        .aspectRatio(contentMode: .fill)
+                                                        .frame(width: 60, height: 60)
+                                                        .clipped()
+                                                case .failure, .empty:
+                                                    Rectangle()
+                                                        .fill(Color.gray.opacity(0.2))
+                                                        .frame(width: 60, height: 60)
+                                                @unknown default:
+                                                    Rectangle()
+                                                        .fill(Color.gray.opacity(0.2))
+                                                        .frame(width: 60, height: 60)
+                                                }
+                                            }
+                                            .cornerRadius(8)
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: 8)
+                                                    .stroke(selectedImageIndex == index ? Color.appPrimary : Color.clear, lineWidth: 2)
+                                            )
+                                        }
+                                    }
+                                }
+                                .padding(.horizontal)
+                            }
+                            .padding(.vertical, 8)
+                        }
                     }
                     
                     VStack(alignment: .leading, spacing: 15) {
@@ -217,49 +213,118 @@ struct ProductDetailView: View {
                             }
                         }
                         
-                        // Variation Selection - ALWAYS SHOW if hasVariations
+                        // Variation Selection - Group by attribute type
                         if product.hasVariations {
-                            VStack(alignment: .leading, spacing: 12) {
+                            VStack(alignment: .leading, spacing: 16) {
                                 Text("select_options".localized)
                                     .font(.headline)
                                     .fontWeight(.semibold)
                                 
                                 if variationsLoadFailed {
                                     // Error state
-                                    Text("Failed to load options. Product may not have variations configured.")
-                                        .foregroundColor(.red)
-                                        .font(.caption)
-                                        .padding()
+                                    HStack(spacing: 12) {
+                                        Image(systemName: "exclamationmark.triangle.fill")
+                                            .foregroundColor(.orange)
+                                        Text("Failed to load options. Product may not have variations configured.")
+                                            .foregroundColor(.secondary)
+                                            .font(.subheadline)
+                                    }
+                                    .padding()
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .background(Color.orange.opacity(0.1))
+                                    .cornerRadius(10)
                                 } else if variations.isEmpty {
                                     // Loading state
-                                    HStack {
+                                    HStack(spacing: 12) {
                                         ProgressView()
                                         Text("Loading options...")
                                             .foregroundColor(.gray)
+                                            .font(.subheadline)
                                     }
                                     .padding()
                                 } else {
-                                    ForEach(variations) { variation in
-                                        VariationOptionButton(
-                                            variation: variation,
-                                            isSelected: selectedVariationId == variation.id,
-                                            onSelect: {
-                                                selectedVariationId = variation.id
-                                                showVariationError = false
+                                    // Group variations by attribute names
+                                    let groupedAttributes = groupVariationAttributes()
+                                    
+                                    ForEach(Array(groupedAttributes.keys.sorted()), id: \.self) { attributeName in
+                                        VStack(alignment: .leading, spacing: 8) {
+                                            Text(attributeName)
+                                                .font(.subheadline)
+                                                .fontWeight(.medium)
+                                                .foregroundColor(.secondary)
+                                            
+                                            if let values = groupedAttributes[attributeName] {
+                                                FlowLayout(spacing: 8) {
+                                                    ForEach(values, id: \.self) { value in
+                                                        AttributeChip(
+                                                            value: value,
+                                                            isSelected: isAttributeSelected(name: attributeName, value: value),
+                                                            onSelect: {
+                                                                selectVariationByAttribute(name: attributeName, value: value)
+                                                            }
+                                                        )
+                                                    }
+                                                }
                                             }
-                                        )
+                                        }
+                                    }
+                                    
+                                    // Show selected variation details
+                                    if let selectedVariationId = selectedVariationId,
+                                       let selectedVariation = variations.first(where: { $0.id == selectedVariationId }) {
+                                        Divider()
+                                            .padding(.vertical, 4)
+                                        
+                                        HStack(spacing: 12) {
+                                            VStack(alignment: .leading, spacing: 4) {
+                                                Text("Selected:")
+                                                    .font(.caption)
+                                                    .foregroundColor(.secondary)
+                                                Text(selectedVariation.attributes.map { $0.value }.joined(separator: " • "))
+                                                    .font(.subheadline)
+                                                    .fontWeight(.medium)
+                                            }
+                                            
+                                            Spacer()
+                                            
+                                            if let price = selectedVariation.price {
+                                                Text("$\(String(format: "%.2f", price))")
+                                                    .font(.headline)
+                                                    .foregroundColor(.appPrimary)
+                                            }
+                                            
+                                            if selectedVariation.stockQuantity > 0 {
+                                                HStack(spacing: 4) {
+                                                    Image(systemName: "checkmark.circle.fill")
+                                                        .font(.caption)
+                                                    Text("\(selectedVariation.stockQuantity) in stock")
+                                                        .font(.caption)
+                                                }
+                                                .foregroundColor(.green)
+                                            } else {
+                                                Text("Out of stock")
+                                                    .font(.caption)
+                                                    .foregroundColor(.red)
+                                            }
+                                        }
+                                        .padding()
+                                        .background(Color.appPrimary.opacity(0.08))
+                                        .cornerRadius(10)
                                     }
                                 }
                                 
                                 if showVariationError {
-                                    Text("please_select_option".localized)
-                                        .font(.caption)
-                                        .foregroundColor(.red)
-                                        .padding(.top, 4)
+                                    HStack(spacing: 8) {
+                                        Image(systemName: "exclamationmark.circle.fill")
+                                        Text("please_select_option".localized)
+                                            .font(.subheadline)
+                                    }
+                                    .foregroundColor(.red)
+                                    .padding(.top, 4)
                                 }
                             }
                             .padding()
-                            .background(Color.gray.opacity(0.05))
+                            .background(Color(.systemGray6))
                             .cornerRadius(12)
                         }
                         
@@ -334,12 +399,18 @@ struct ProductDetailView: View {
                 }
             }
         }
+        .overlay(alignment: .bottom) {
+            // Toast notification for cart
+            if showAddedToCart {
+                ToastView(message: addedToCartMessage, icon: "checkmark.circle.fill")
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                    .animation(.spring(), value: showAddedToCart)
+                    .padding(.bottom, 20)
+            }
+        }
         .onAppear {
             loadProduct()
             checkWishlistStatus()
-        }
-        .alert("added_to_cart".localized, isPresented: $showAddedToCart) {
-            Button("OK", role: .cancel) { }
         }
         .alert("login_required".localized, isPresented: $showLoginPrompt) {
             Button("cancel".localized, role: .cancel) { }
@@ -525,7 +596,20 @@ struct ProductDetailView: View {
                 variationId: selectedVariationId,
                 variationDisplayName: variationDisplayName
             )
-            showAddedToCart = true
+            
+            // Show toast notification
+            addedToCartMessage = "\(quantity) × \(product.name) " + "added_to_cart".localized
+            withAnimation {
+                showAddedToCart = true
+            }
+            
+            // Hide toast after 3 seconds
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                withAnimation {
+                    showAddedToCart = false
+                }
+            }
+            
             quantity = 1 // Reset quantity
         }
     }
@@ -552,61 +636,155 @@ struct ProductDetailView: View {
             .map { "\($0.name): \($0.value)" }
             .joined(separator: ", ")
     }
+    
+    // MARK: - Variation Attribute Grouping Helpers
+    
+    /// Groups all variations by their attribute names and returns unique values
+    /// Example: ["Size": ["Small", "Medium", "Large"], "Color": ["Red", "Blue"]]
+    private func groupVariationAttributes() -> [String: [String]] {
+        var grouped: [String: Set<String>] = [:]
+        
+        for variation in variations {
+            for attribute in variation.attributes {
+                if grouped[attribute.name] == nil {
+                    grouped[attribute.name] = Set<String>()
+                }
+                grouped[attribute.name]?.insert(attribute.value)
+            }
+        }
+        
+        return grouped.mapValues { Array($0).sorted() }
+    }
+    
+    /// Checks if a specific attribute value is selected in the current variation
+    private func isAttributeSelected(name: String, value: String) -> Bool {
+        guard let selectedVariationId = selectedVariationId,
+              let selectedVariation = variations.first(where: { $0.id == selectedVariationId }) else {
+            return false
+        }
+        
+        return selectedVariation.attributes.contains { $0.name == name && $0.value == value }
+    }
+    
+    /// Selects a variation that matches the given attribute
+    /// If multiple variations match, selects the first one
+    private func selectVariationByAttribute(name: String, value: String) {
+        // Find variations that have this attribute value
+        let matchingVariations = variations.filter { variation in
+            variation.attributes.contains { $0.name == name && $0.value == value }
+        }
+        
+        if let firstMatch = matchingVariations.first {
+            selectedVariationId = firstMatch.id
+            showVariationError = false
+        }
+    }
 }
-// Variation Option Button Component
-struct VariationOptionButton: View {
-    let variation: ProductVariation
+
+// MARK: - Attribute Chip Component
+struct AttributeChip: View {
+    let value: String
     let isSelected: Bool
     let onSelect: () -> Void
     
     var body: some View {
         Button(action: onSelect) {
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(variation.attributes.map { $0.value }.joined(separator: " / "))
-                        .font(.body)
-                        .fontWeight(isSelected ? .semibold : .regular)
-                        .foregroundColor(.primary)
-                    
-                    HStack(spacing: 8) {
-                        if let price = variation.price {
-                            Text("$\(String(format: "%.2f", price))")
-                                .font(.subheadline)
-                                .foregroundColor(.appPrimary)
-                        }
-                        
-                        if variation.stockQuantity > 0 {
-                            Text("• \(variation.stockQuantity) in stock")
-                                .font(.caption)
-                                .foregroundColor(.green)
-                        } else {
-                            Text("• Out of stock")
-                                .font(.caption)
-                                .foregroundColor(.red)
-                        }
-                    }
-                }
-                
-                Spacer()
-                
-                if isSelected {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundColor(.appPrimary)
-                        .font(.title3)
-                }
-            }
-            .padding()
-            .background(
-                RoundedRectangle(cornerRadius: 10)
-                    .fill(isSelected ? Color.appPrimary.opacity(0.1) : Color.white)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 10)
-                    .stroke(isSelected ? Color.appPrimary : Color.gray.opacity(0.3), lineWidth: isSelected ? 2 : 1)
-            )
+            Text(value)
+                .font(.subheadline)
+                .fontWeight(isSelected ? .semibold : .regular)
+                .foregroundColor(isSelected ? .white : .primary)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
+                .background(isSelected ? Color.appPrimary : Color.white)
+                .cornerRadius(20)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20)
+                        .stroke(isSelected ? Color.appPrimary : Color.gray.opacity(0.3), lineWidth: 1.5)
+                )
+                .shadow(color: isSelected ? Color.appPrimary.opacity(0.3) : .clear, radius: 4, x: 0, y: 2)
         }
-        .disabled(variation.stockQuantity == 0)
-        .opacity(variation.stockQuantity == 0 ? 0.5 : 1.0)
     }
 }
+
+// MARK: - Flow Layout for Chips
+struct FlowLayout: Layout {
+    var spacing: CGFloat = 8
+    
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let result = FlowResult(
+            in: proposal.replacingUnspecifiedDimensions().width,
+            subviews: subviews,
+            spacing: spacing
+        )
+        return result.size
+    }
+    
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        let result = FlowResult(
+            in: bounds.width,
+            subviews: subviews,
+            spacing: spacing
+        )
+        for (index, subview) in subviews.enumerated() {
+            subview.place(at: CGPoint(x: bounds.minX + result.frames[index].minX, y: bounds.minY + result.frames[index].minY), proposal: .unspecified)
+        }
+    }
+    
+    struct FlowResult {
+        var size: CGSize = .zero
+        var frames: [CGRect] = []
+        
+        init(in maxWidth: CGFloat, subviews: Subviews, spacing: CGFloat) {
+            var currentX: CGFloat = 0
+            var currentY: CGFloat = 0
+            var lineHeight: CGFloat = 0
+            
+            for subview in subviews {
+                let size = subview.sizeThatFits(.unspecified)
+                
+                if currentX + size.width > maxWidth && currentX > 0 {
+                    // New line
+                    currentX = 0
+                    currentY += lineHeight + spacing
+                    lineHeight = 0
+                }
+                
+                frames.append(CGRect(x: currentX, y: currentY, width: size.width, height: size.height))
+                
+                currentX += size.width + spacing
+                lineHeight = max(lineHeight, size.height)
+            }
+            
+            self.size = CGSize(width: maxWidth, height: currentY + lineHeight)
+        }
+    }
+}
+// MARK: - Toast Notification View
+struct ToastView: View {
+    let message: String
+    let icon: String
+    
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .font(.title3)
+                .foregroundColor(.white)
+            
+            Text(message)
+                .font(.subheadline)
+                .fontWeight(.medium)
+                .foregroundColor(.white)
+                .lineLimit(2)
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 14)
+        .background(
+            Capsule()
+                .fill(Color.green)
+                .shadow(color: .black.opacity(0.2), radius: 10, x: 0, y: 5)
+        )
+        .padding(.horizontal)
+    }
+}
+
 
