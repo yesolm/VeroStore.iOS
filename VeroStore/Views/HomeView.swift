@@ -17,7 +17,7 @@ struct HomeView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: 20) {
+                VStack(spacing: 12) {
                     // Search bar - first row
                     NavigationLink(destination: SearchView()) {
                         HStack {
@@ -213,56 +213,52 @@ struct HomeView: View {
 
 struct BannerCarouselView: View {
     let banners: [Banner]
-    @State private var currentIndex = 0
+    
+    // Gradient colors matching Android's bg_banner_gradient files
+    private let gradientColors: [(start: Color, end: Color)] = [
+        (Color(hex: "#6366F1"), Color(hex: "#8B5CF6")), // Purple
+        (Color(hex: "#EC4899"), Color(hex: "#F43F5E")), // Pink
+        (Color(hex: "#14B8A6"), Color(hex: "#06B6D4")), // Teal
+        (Color(hex: "#F59E0B"), Color(hex: "#EF4444"))  // Orange
+    ]
     
     var body: some View {
-        VStack(spacing: 12) {
-            TabView(selection: $currentIndex) {
+        // Matches Android: height 405dp, marginStart 16dp, marginEnd 0dp, clipChildren false
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) { // 8dp margin between cards like Android
                 ForEach(Array(banners.enumerated()), id: \.element.id) { index, banner in
                     NavigationLink(destination: destinationView(for: banner)) {
-                        AsyncImage(url: URL(string: banner.imageUrl)) { phase in
-                            switch phase {
-                            case .empty:
-                                RoundedRectangle(cornerRadius: 20)
-                                    .fill(Color.gray.opacity(0.2))
-                            case .success(let image):
-                                image
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fill)
-                                    .frame(height: 200)
-                                    .clipped()
-                                    .clipShape(RoundedRectangle(cornerRadius: 20))
-                            case .failure:
-                                RoundedRectangle(cornerRadius: 20)
-                                    .fill(Color.gray.opacity(0.2))
-                            @unknown default:
-                                RoundedRectangle(cornerRadius: 20)
-                                    .fill(Color.gray.opacity(0.2))
-                            }
-                        }
-                        .frame(height: 200)
-                        .shadow(color: .black.opacity(0.1), radius: 6, x: 0, y: 3)
+                        BannerCardView(
+                            banner: banner,
+                            gradient: getGradient(for: index, banner: banner)
+                        )
                     }
                     .buttonStyle(PlainButtonStyle())
-                    .tag(index)
                 }
             }
-            .frame(height: 200)
-            .tabViewStyle(.page(indexDisplayMode: .never))
-            
-            // Page indicators
-            if banners.count > 1 {
-                HStack(spacing: 8) {
-                    ForEach(0..<banners.count, id: \.self) { index in
-                        Circle()
-                            .fill(index == currentIndex ? Color.appPrimary : Color.gray.opacity(0.3))
-                            .frame(width: 8, height: 8)
-                            .animation(.easeInOut(duration: 0.2), value: currentIndex)
-                    }
-                }
-            }
+            .padding(.leading, 16) // marginStart 16dp
+            .padding(.trailing, 48) // Allows peek of next banner (like Android banner_page_offset 48dp)
         }
-        .padding(.horizontal)
+        .frame(height: 380) // ~405dp like Android
+    }
+    
+    private func getGradient(for index: Int, banner: Banner) -> LinearGradient {
+        // Use API backgroundColor if available
+        if let bgColor = banner.backgroundColor, !bgColor.isEmpty {
+            let color = Color(hex: bgColor)
+            return LinearGradient(
+                colors: [color, color.opacity(0.85)],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        }
+        // Otherwise rotate through gradients like Android
+        let colors = gradientColors[index % gradientColors.count]
+        return LinearGradient(
+            colors: [colors.start, colors.end],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
     }
     
     @ViewBuilder
@@ -289,6 +285,88 @@ struct BannerCarouselView: View {
         default:
             EmptyView()
         }
+    }
+}
+
+// Banner card matching Android's item_banner.xml exactly
+struct BannerCardView: View {
+    let banner: Banner
+    let gradient: LinearGradient
+    
+    var body: some View {
+        // Card width: screen - left margin (16) - peek (48) - spacing (8)
+        // This makes each card take most of the screen with next card peeking
+        let cardWidth = UIScreen.main.bounds.width - 16 - 48 - 8
+        
+        ZStack(alignment: .topLeading) {
+            // Gradient background (like Android's bg_banner_gradient)
+            RoundedRectangle(cornerRadius: 20)
+                .fill(gradient)
+            
+            VStack(alignment: .leading, spacing: 0) {
+                // Title at top left (like Android: textSize 26sp, bold, white)
+                if let title = banner.title, !title.isEmpty {
+                    Text(title)
+                        .font(.system(size: 26, weight: .bold))
+                        .foregroundColor(.white)
+                        .lineLimit(2)
+                        .padding(.horizontal, 20)
+                        .padding(.top, 20)
+                }
+                
+                Spacer()
+                
+                // Image at bottom area (Android guideline at 35%, so image takes bottom 65%)
+                AsyncImage(url: URL(string: banner.imageUrl)) { phase in
+                    switch phase {
+                    case .empty:
+                        Color.white.opacity(0.1)
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                    case .failure:
+                        Color.white.opacity(0.1)
+                    @unknown default:
+                        Color.white.opacity(0.1)
+                    }
+                }
+                .frame(maxWidth: .infinity)
+                .frame(height: 220) // About 60% of 380 height
+                .padding(.horizontal, 20)
+                .padding(.bottom, 20)
+            }
+        }
+        .frame(width: cardWidth, height: 380)
+        .clipShape(RoundedRectangle(cornerRadius: 20))
+        .shadow(color: .black.opacity(0.15), radius: 6, x: 0, y: 4) // cardElevation 6dp
+    }
+}
+
+// Color extension for hex colors
+extension Color {
+    init(hex: String) {
+        let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
+        var int: UInt64 = 0
+        Scanner(string: hex).scanHexInt64(&int)
+        let a, r, g, b: UInt64
+        switch hex.count {
+        case 3: // RGB (12-bit)
+            (a, r, g, b) = (255, (int >> 8) * 17, (int >> 4 & 0xF) * 17, (int & 0xF) * 17)
+        case 6: // RGB (24-bit)
+            (a, r, g, b) = (255, int >> 16, int >> 8 & 0xFF, int & 0xFF)
+        case 8: // ARGB (32-bit)
+            (a, r, g, b) = (int >> 24, int >> 16 & 0xFF, int >> 8 & 0xFF, int & 0xFF)
+        default:
+            (a, r, g, b) = (1, 1, 1, 0)
+        }
+        self.init(
+            .sRGB,
+            red: Double(r) / 255,
+            green: Double(g) / 255,
+            blue: Double(b) / 255,
+            opacity: Double(a) / 255
+        )
     }
 }
 
