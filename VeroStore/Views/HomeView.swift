@@ -227,7 +227,7 @@ struct BannerCarouselView: View {
             .padding(.leading, 16)
             .padding(.trailing, 48)
         }
-        .frame(height: 380)
+        .frame(height: 405)
     }
     
     @ViewBuilder
@@ -260,43 +260,52 @@ struct BannerCarouselView: View {
 struct BannerCardView: View {
     let banner: Banner
     
+    // Height: 405 like Android
+    private let cardHeight: CGFloat = 405
+    
     var body: some View {
         let cardWidth = UIScreen.main.bounds.width - 16 - 48 - 8
         
         ZStack(alignment: .topLeading) {
-            // Banner image as background
-            AsyncImage(url: URL(string: banner.imageUrl)) { phase in
-                switch phase {
-                case .empty:
-                    RoundedRectangle(cornerRadius: 20)
-                        .fill(Color.gray.opacity(0.2))
-                case .success(let image):
-                    image
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                case .failure:
-                    RoundedRectangle(cornerRadius: 20)
-                        .fill(Color.gray.opacity(0.2))
-                @unknown default:
-                    RoundedRectangle(cornerRadius: 20)
-                        .fill(Color.gray.opacity(0.2))
-                }
-            }
-            .frame(width: cardWidth, height: 380)
-            .clipped()
+            // Background
+            RoundedRectangle(cornerRadius: 20)
+                .fill(Color.gray.opacity(0.15))
             
-            // Title overlay at top
-            if let title = banner.title, !title.isEmpty {
-                Text(title)
-                    .font(.system(size: 26, weight: .bold))
-                    .foregroundColor(.white)
-                    .shadow(color: .black.opacity(0.5), radius: 2, x: 0, y: 1)
-                    .lineLimit(2)
-                    .padding(.horizontal, 20)
-                    .padding(.top, 20)
+            VStack(alignment: .leading, spacing: 0) {
+                // Title at top (30% area)
+                if let title = banner.title, !title.isEmpty {
+                    Text(title)
+                        .font(.system(size: 26, weight: .bold))
+                        .foregroundColor(.black)
+                        .lineLimit(2)
+                        .padding(.horizontal, 20)
+                        .padding(.top, 20)
+                }
+                
+                Spacer()
+                
+                // Image in bottom 70%
+                AsyncImage(url: URL(string: banner.imageUrl)) { phase in
+                    switch phase {
+                    case .empty:
+                        Color.clear
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                    case .failure:
+                        Color.clear
+                    @unknown default:
+                        Color.clear
+                    }
+                }
+                .frame(maxWidth: .infinity)
+                .frame(height: cardHeight * 0.7) // 70% of card height
+                .padding(.horizontal, 16)
+                .padding(.bottom, 16)
             }
         }
-        .frame(width: cardWidth, height: 380)
+        .frame(width: cardWidth, height: cardHeight)
         .clipShape(RoundedRectangle(cornerRadius: 20))
         .shadow(color: .black.opacity(0.15), radius: 6, x: 0, y: 4)
     }
