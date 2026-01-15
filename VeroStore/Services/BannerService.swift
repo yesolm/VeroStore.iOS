@@ -22,9 +22,14 @@ class BannerService: ObservableObject {
         }
         
         print("🎪 Fetching banners from: \(endpoint)")
-        let banners = try await networkService.request([Banner].self, endpoint: endpoint)
-        print("🎪 Received \(banners.count) banners from API")
+        let allBanners = try await networkService.request([Banner].self, endpoint: endpoint)
+        print("🎪 Received \(allBanners.count) banners from API")
         
-        return banners
+        // Filter for mobile-compatible banners (deviceType = 0 for All, or 2 for Mobile)
+        // This matches the Android behavior
+        let mobileBanners = allBanners.filter { $0.isMobileCompatible && $0.isActive }
+        print("🎪 Filtered to \(mobileBanners.count) mobile-compatible banners")
+        
+        return mobileBanners
     }
 }

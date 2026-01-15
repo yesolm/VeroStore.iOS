@@ -24,36 +24,18 @@ struct SplashView: View {
                 })
             } else {
                 ZStack {
-                    // Background gradient
-                    LinearGradient(
-                        colors: [Color.white, Color.appPrimary.opacity(0.05)],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                    .ignoresSafeArea()
+                    // Background
+                    Color.white
+                        .ignoresSafeArea()
                     
-                    VStack {
-                        Spacer()
-                        
-                        // App Logo
-                        Image("logo")
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: 120, height: 120)
-                            .scaleEffect(isReady ? 1.0 : 0.8)
-                            .opacity(isReady ? 1.0 : 0.0)
-                            .animation(.spring(response: 0.6, dampingFraction: 0.7), value: isReady)
-                        
-                        Spacer()
-                        
-                        // Loading indicator
-                        if !isReady {
-                            ProgressView()
-                                .progressViewStyle(CircularProgressViewStyle(tint: .appPrimary))
-                                .scaleEffect(1.5)
-                                .padding(.bottom, 50)
-                        }
-                    }
+                    // App Logo - centered
+                    Image("logo")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 150, height: 150)
+                        .scaleEffect(isReady ? 1.0 : 0.8)
+                        .opacity(isReady ? 1.0 : 0.0)
+                        .animation(.spring(response: 0.6, dampingFraction: 0.7), value: isReady)
                 }
             }
         }

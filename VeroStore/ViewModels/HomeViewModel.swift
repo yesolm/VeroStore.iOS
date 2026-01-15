@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftUI
+import Combine
 
 @MainActor
 class HomeViewModel: ObservableObject {
@@ -24,11 +25,31 @@ class HomeViewModel: ObservableObject {
     private let bannerService = BannerService.shared
     private let storeService = StoreService.shared
     
-    func loadData() async {
-        // Don't clear data on refresh - just set loading
-        let isRefresh = !banners.isEmpty || !categories.isEmpty || !trendingProducts.isEmpty
+    private var cancellables = Set<AnyCancellable>()
+    private var currentStoreId: Int?
+    
+    init() {
+        // Observe store changes (like Android's preferencesManager.selectedStoreId.collect)
+        storeService.$selectedStore
+            .dropFirst() // Skip initial value
+            .sink { [weak self] newStore in
+                guard let self = self else { return }
+                if let newStore = newStore, newStore.id != self.currentStoreId {
+                    print("🏪 Store changed to: \(newStore.name) (id: \(newStore.id))")
+                    self.currentStoreId = newStore.id
+                    Task {
+                        await self.loadData(forceRefresh: true)
+                    }
+                }
+            }
+            .store(in: &cancellables)
+    }
+    
+    func loadData(forceRefresh: Bool = false) async {
+        // Show loading only on first load
+        let isFirstLoad = banners.isEmpty && categories.isEmpty && trendingProducts.isEmpty
         
-        if !isRefresh {
+        if isFirstLoad {
             isLoading = true
         }
         error = nil
@@ -51,7 +72,11 @@ class HomeViewModel: ObservableObject {
             return
         }
         
+        // Track current store
+        currentStoreId = storeId
+        
         do {
+            // Load all data in parallel (like Android)
             async let categoriesTask = loadCategories(storeId: storeId)
             async let bannersTask = loadBanners(storeId: storeId)
             async let productsTask = loadProducts(storeId: storeId)
@@ -85,12 +110,12 @@ class HomeViewModel: ObservableObject {
     
     private func loadBanners(storeId: Int?) async throws {
         do {
-            banners = try await bannerService.getActiveBanners(storeId: storeId)
+            let newBanners = try await bannerService.getActiveBanners(storeId: storeId)
+            banners = newBanners
             print("✅ Loaded \(banners.count) banners successfully")
         } catch {
             print("❌ Failed to load banners: \(error)")
-            // Don't throw - banners are optional
-            banners = []
+            // Don't throw - banners are optional, but keep existing banners on error
         }
     }
     
@@ -102,7 +127,8 @@ class HomeViewModel: ObservableObject {
         deals = homeProducts.deals ?? []
     }
     
+    // Like Android's refreshData()
     func refresh() async {
-        await loadData()
+        await loadData(forceRefresh: true)
     }
 }

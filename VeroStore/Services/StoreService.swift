@@ -13,6 +13,7 @@ class StoreService: ObservableObject {
     
     @Published var stores: [Store] = []
     @Published var selectedStore: Store?
+    @Published var isChangingStore = false // Loading indicator during store change
     
     private let networkService = NetworkService.shared
     private let userDefaults = UserDefaults.standard
@@ -29,23 +30,35 @@ class StoreService: ObservableObject {
             stores = try await networkService.request([Store].self, endpoint: "Stores")
             loadSelectedStore()
             if selectedStore == nil, let firstStore = stores.first {
-                selectStore(firstStore)
+                // Don't trigger change notification for initial selection
+                selectedStore = firstStore
+                userDefaults.set(firstStore.id, forKey: selectedStoreKey)
             }
         } catch {
             print("Error loading stores: \(error)")
         }
     }
     
+    // Like Android's changeStore() in HomeViewModel
     func selectStore(_ store: Store) {
         let previousStoreId = selectedStore?.id
+        
+        // Only proceed if store actually changed
+        guard previousStoreId != store.id else { return }
+        
+        isChangingStore = true
+        print("🏪 Changing store from \(previousStoreId ?? 0) to \(store.id)")
+        
+        // Clear cart when switching stores (like Android)
+        Task {
+            await CartService.shared.clearCart()
+        }
+        
+        // Update selected store - this triggers the publisher
         selectedStore = store
         userDefaults.set(store.id, forKey: selectedStoreKey)
         
-        if let previousStoreId = previousStoreId, previousStoreId != store.id {
-            Task {
-                await CartService.shared.clearCart()
-            }
-        }
+        isChangingStore = false
     }
     
     private func loadSelectedStore() {

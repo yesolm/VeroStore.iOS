@@ -216,35 +216,53 @@ struct BannerCarouselView: View {
     @State private var currentIndex = 0
     
     var body: some View {
-        TabView(selection: $currentIndex) {
-            ForEach(Array(banners.enumerated()), id: \.element.id) { index, banner in
-                NavigationLink(destination: destinationView(for: banner)) {
-                    AsyncImage(url: URL(string: banner.imageUrl)) { phase in
-                        switch phase {
-                        case .empty:
-                            Rectangle()
-                                .fill(Color.gray.opacity(0.2))
-                                .overlay(ProgressView())
-                        case .success(let image):
-                            image
-                                .resizable()
-                                .scaledToFill()
-                        case .failure:
-                            Rectangle()
-                                .fill(Color.gray.opacity(0.2))
-                        @unknown default:
-                            Rectangle()
-                                .fill(Color.gray.opacity(0.2))
+        VStack(spacing: 12) {
+            TabView(selection: $currentIndex) {
+                ForEach(Array(banners.enumerated()), id: \.element.id) { index, banner in
+                    NavigationLink(destination: destinationView(for: banner)) {
+                        AsyncImage(url: URL(string: banner.imageUrl)) { phase in
+                            switch phase {
+                            case .empty:
+                                RoundedRectangle(cornerRadius: 20)
+                                    .fill(Color.gray.opacity(0.2))
+                            case .success(let image):
+                                image
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
+                                    .frame(height: 200)
+                                    .clipped()
+                                    .clipShape(RoundedRectangle(cornerRadius: 20))
+                            case .failure:
+                                RoundedRectangle(cornerRadius: 20)
+                                    .fill(Color.gray.opacity(0.2))
+                            @unknown default:
+                                RoundedRectangle(cornerRadius: 20)
+                                    .fill(Color.gray.opacity(0.2))
+                            }
                         }
+                        .frame(height: 200)
+                        .shadow(color: .black.opacity(0.1), radius: 6, x: 0, y: 3)
                     }
-                    .clipped()
+                    .buttonStyle(PlainButtonStyle())
+                    .tag(index)
                 }
-                .buttonStyle(PlainButtonStyle())
-                .tag(index)
+            }
+            .frame(height: 200)
+            .tabViewStyle(.page(indexDisplayMode: .never))
+            
+            // Page indicators
+            if banners.count > 1 {
+                HStack(spacing: 8) {
+                    ForEach(0..<banners.count, id: \.self) { index in
+                        Circle()
+                            .fill(index == currentIndex ? Color.appPrimary : Color.gray.opacity(0.3))
+                            .frame(width: 8, height: 8)
+                            .animation(.easeInOut(duration: 0.2), value: currentIndex)
+                    }
+                }
             }
         }
-        .frame(height: 160)
-        .tabViewStyle(.page)
+        .padding(.horizontal)
     }
     
     @ViewBuilder
