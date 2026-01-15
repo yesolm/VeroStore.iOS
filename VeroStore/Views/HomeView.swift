@@ -260,23 +260,22 @@ struct BannerCarouselView: View {
 struct BannerCardView: View {
     let banner: Banner
     
-    // Height: 405 like Android
     private let cardHeight: CGFloat = 405
     
     var body: some View {
         let cardWidth = UIScreen.main.bounds.width - 16 - 48 - 8
         
         ZStack(alignment: .topLeading) {
-            // Background
+            // Background color from API
             RoundedRectangle(cornerRadius: 20)
-                .fill(Color.gray.opacity(0.15))
+                .fill(backgroundColor)
             
             VStack(alignment: .leading, spacing: 0) {
-                // Title at top (30% area)
+                // Title at top (white text like Android)
                 if let title = banner.title, !title.isEmpty {
                     Text(title)
                         .font(.system(size: 26, weight: .bold))
-                        .foregroundColor(.black)
+                        .foregroundColor(.white)
                         .lineLimit(2)
                         .padding(.horizontal, 20)
                         .padding(.top, 20)
@@ -284,7 +283,7 @@ struct BannerCardView: View {
                 
                 Spacer()
                 
-                // Image in bottom 70%
+                // Image in bottom 1/3
                 AsyncImage(url: URL(string: banner.imageUrl)) { phase in
                     switch phase {
                     case .empty:
@@ -300,7 +299,7 @@ struct BannerCardView: View {
                     }
                 }
                 .frame(maxWidth: .infinity)
-                .frame(height: cardHeight * 0.7) // 70% of card height
+                .frame(height: cardHeight / 3) // Bottom 1/3
                 .padding(.horizontal, 16)
                 .padding(.bottom, 16)
             }
@@ -308,6 +307,24 @@ struct BannerCardView: View {
         .frame(width: cardWidth, height: cardHeight)
         .clipShape(RoundedRectangle(cornerRadius: 20))
         .shadow(color: .black.opacity(0.15), radius: 6, x: 0, y: 4)
+    }
+    
+    // Parse backgroundColor from API
+    private var backgroundColor: Color {
+        guard let hex = banner.backgroundColor, !hex.isEmpty else {
+            return Color.gray.opacity(0.3)
+        }
+        let cleanHex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
+        var int: UInt64 = 0
+        Scanner(string: cleanHex).scanHexInt64(&int)
+        let r, g, b: UInt64
+        switch cleanHex.count {
+        case 6:
+            (r, g, b) = (int >> 16, int >> 8 & 0xFF, int & 0xFF)
+        default:
+            return Color.gray.opacity(0.3)
+        }
+        return Color(red: Double(r) / 255, green: Double(g) / 255, blue: Double(b) / 255)
     }
 }
 
